@@ -1,4 +1,3 @@
 package ru.practicum;
 
-public class EndpointHit {
-}
+public class EndpointHit {}

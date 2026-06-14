@@ -1,4 +1,3 @@
 package ru.practicum;
 
-public class ApiError {
-}
+public class ApiError {}
