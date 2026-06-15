@@ -1,3 +1,5 @@
 package ru.practicum;
 
-public class ViewStats {}
+public class ViewStats {
+
+}
