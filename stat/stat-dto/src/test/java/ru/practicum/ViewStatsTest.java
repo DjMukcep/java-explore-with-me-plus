@@ -92,15 +92,12 @@ class ViewStatsTest {
     }
 
     @Test
-    void testHitsZero_validationFails() {
+    void testHitsZero_validationPass() {
         viewStats.setHits(0L);
 
         Set<ConstraintViolation<ViewStats>> violations = validator.validate(viewStats);
 
-        assertThat(violations, hasSize(1));
-        ConstraintViolation<ViewStats> violation = violations.iterator().next();
-        assertThat(violation.getPropertyPath().toString(), equalTo("hits"));
-        assertThat(violation.getMessage(), containsString("должно быть больше 0"));
+        assertThat(violations, empty());
     }
 
     @Test
@@ -112,6 +109,6 @@ class ViewStatsTest {
         assertThat(violations, hasSize(1));
         ConstraintViolation<ViewStats> violation = violations.iterator().next();
         assertThat(violation.getPropertyPath().toString(), equalTo("hits"));
-        assertThat(violation.getMessage(), containsString("должно быть больше 0"));
+        assertThat(violation.getMessage(), containsString("должно быть не меньше 0"));
     }
 }
