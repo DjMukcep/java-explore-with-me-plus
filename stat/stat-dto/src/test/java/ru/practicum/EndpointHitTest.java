@@ -61,6 +61,18 @@ class EndpointHitTest {
     }
 
     @Test
+    void whenIdIsNull_thenHasViolation() {
+        endpointHit.setId(null);
+
+        Set<ConstraintViolation<EndpointHit>> violations = validator.validate(endpointHit);
+
+        assertThat(violations, hasSize(1));
+        ConstraintViolation<EndpointHit> violation = violations.iterator().next();
+        assertThat(violation.getPropertyPath().toString(), is("id"));
+        assertThat(violation.getMessage(), containsString("не должно равняться null"));
+    }
+
+    @Test
     void whenAppIsBlank_thenHasViolation() {
         endpointHit.setApp(" ");
 
