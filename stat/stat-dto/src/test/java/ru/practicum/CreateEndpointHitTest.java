@@ -14,7 +14,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.Matchers.containsString;
 
-class CreateCreateEndpointHitTest {
+class CreateEndpointHitTest {
 
     private static Validator validator;
     private CreateEndpointHit createEndpointHit;
