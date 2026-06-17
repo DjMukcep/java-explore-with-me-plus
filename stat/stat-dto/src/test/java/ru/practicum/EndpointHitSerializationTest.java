@@ -1,15 +1,11 @@
 package ru.practicum;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -59,7 +55,7 @@ public class EndpointHitSerializationTest {
                 "\"app\":\"some-app\"," +
                 "\"ip\":\"109.11.31.32\"," +
                 "\"uri\":\"/api/uri\"," +
-                "\"timestamp\":\""+ TIMESTAMP_STRING +"\"}";
+                "\"timestamp\":\"" + TIMESTAMP_STRING + "\"}";
 
         EndpointHit dto = objectMapper.readValue(json, EndpointHit.class);
 

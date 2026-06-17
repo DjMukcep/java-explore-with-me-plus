@@ -15,7 +15,7 @@ public class StatController {
 
     // TODO: Implement service
 
-    private final static String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
+    private static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     @PostMapping("/hit")
     @ResponseStatus(HttpStatus.CREATED)
