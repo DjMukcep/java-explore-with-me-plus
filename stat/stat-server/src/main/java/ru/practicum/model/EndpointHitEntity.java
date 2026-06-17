@@ -28,4 +28,17 @@ public class EndpointHitEntity {
 
     @Column(name = "hit_timestamp", nullable = false)
     private LocalDateTime timestamp;
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (!(o instanceof EndpointHitEntity)) return false;
+        return id != null && id.equals(((EndpointHitEntity) o).id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
 }

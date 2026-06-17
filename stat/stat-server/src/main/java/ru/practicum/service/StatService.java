@@ -6,11 +6,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.EndpointHit;
 import ru.practicum.ViewStats;
+import ru.practicum.exception.ValidationException;
 import ru.practicum.model.EndpointHitEntity;
 import ru.practicum.repository.StatRepository;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,9 +24,6 @@ public class StatService {
 
     @Transactional
     public void saveHit(EndpointHit dto) {
-        log.warn("Saving hit: app={}, uri={}, ip={}, timestamp={}",
-                dto.getApp(), dto.getUri(), dto.getIp(), dto.getTimestamp());
-
         EndpointHitEntity entity = EndpointHitEntity.builder()
                 .app(dto.getApp())
                 .uri(dto.getUri())
@@ -31,24 +31,42 @@ public class StatService {
                 .timestamp(dto.getTimestamp())
                 .build();
 
-        statRepository.save(entity);
-        log.warn("Hit saved successfully");
+        entity = statRepository.save(entity);
+        log.info("New hit saved: {}", entity);
     }
 
     @Transactional(readOnly = true)
     public List<ViewStats> getStats(LocalDateTime start, LocalDateTime end,
                                     List<String> uris, boolean unique) {
-        log.warn("Getting stats: start={}, end={}, uris={}, unique={}",
-                start, end, uris, unique);
-
-        List<ViewStats> stats;
-        if (unique) {
-            stats = statRepository.findStatsUnique(start, end, uris);
-        } else {
-            stats = statRepository.findStats(start, end, uris);
+        if (end.isBefore(start)) {
+            throw new ValidationException("End date must not be before start date");
         }
 
-        log.warn("Stats retrieved: {} records", stats.size());
-        return stats;
+        List<EndpointHitEntity> hits = statRepository.findAllByTimestampBetween(start, end);
+
+        return buildStats(hits, uris, unique);
+    }
+
+    private List<ViewStats> buildStats(List<EndpointHitEntity> hits,
+                                       List<String> uris,
+                                       boolean unique) {
+        return hits.stream()
+                .filter(hit -> uris == null || uris.isEmpty() || uris.contains(hit.getUri()))
+                .collect(Collectors.groupingBy(
+                        hit -> new GroupKey(hit.getApp(), hit.getUri()),
+                        Collectors.mapping(EndpointHitEntity::getIp, Collectors.toList())
+                ))
+                .entrySet().stream()
+                .map(entry -> new ViewStats(
+                        entry.getKey().app(),
+                        entry.getKey().uri(),
+                        unique ? (long) entry.getValue().stream().distinct().count()
+                                : (long) entry.getValue().size()
+                ))
+                .sorted(Comparator.comparingLong(ViewStats::getHits).reversed())
+                .collect(Collectors.toList());
+    }
+
+    private record GroupKey(String app, String uri) {
     }
 }
