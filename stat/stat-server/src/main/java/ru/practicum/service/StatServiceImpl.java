@@ -59,8 +59,9 @@ public class StatServiceImpl implements StatService {
             return hits;
         }
         return hits.stream()
-                .filter(hit -> uris.contains(hit.getUri()))
-                .collect(Collectors.toList());
+                .filter(hit -> uris.stream()
+                        .anyMatch(uri -> hit.getUri().startsWith(uri)))
+                .toList();
     }
 
     private Map<GroupKey, List<String>> groupByAppAndUri(List<EndpointHitEntity> hits) {
