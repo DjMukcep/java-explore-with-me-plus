@@ -8,8 +8,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.ApiError;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -20,13 +18,15 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class ErrorHandler {
 
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter formatter =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleMethodArgumentNotValidException(final MethodArgumentNotValidException e) {
 
-        List<String> errors = e.getBindingResult().getFieldErrors()
+        List<String> errors = e.getBindingResult()
+                .getFieldErrors()
                 .stream()
                 .map(error -> String.format("%s: %s", error.getField(), error.getDefaultMessage()))
                 .collect(Collectors.toList());
@@ -34,11 +34,11 @@ public class ErrorHandler {
         log.warn("Ошибка при валидации полей: {}",errors);
 
         return ApiError.builder()
-                .message("Validation Error")
-                .reason("Incorrectly made request")
-                .httpStatus(HttpStatus.BAD_REQUEST.name())
-                .timestamp(LocalDateTime.now().format(FORMATTER))
                 .errors(errors)
+                .message("Validation failed for some fields")
+                .reason("Incorrectly made request.")
+                .status(HttpStatus.BAD_REQUEST.name())
+                .timestamp(LocalDateTime.now().format(formatter))
                 .build();
     }
 
@@ -48,30 +48,25 @@ public class ErrorHandler {
         log.error("Ошибка валидации: {}",e.getMessage());
 
         return ApiError.builder()
-                .message("Validation Error")
-                .reason("Incorrectly made request")
-                .httpStatus(HttpStatus.BAD_REQUEST.name())
-                .timestamp(LocalDateTime.now().format(FORMATTER))
                 .errors(getStackTrace(e))
+                .message(e.getMessage())
+                .reason("Incorrectly made request.")
+                .status(HttpStatus.BAD_REQUEST.name())
+                .timestamp(LocalDateTime.now().format(formatter))
                 .build();
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiError handleException(final Exception e) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        e.printStackTrace(pw);
-        String stackTrace = sw.toString();
-        log.error("Внутренняя ошибка: {} ", e.getMessage());
-        log.error("Stacktrace: {}", stackTrace);
+        log.error("Внутренняя ошибка: {} ", e.getMessage(), e);
 
         return ApiError.builder()
-                .message("Internal Server Error")
-                .reason("Error occurred on the server side")
-                .httpStatus(HttpStatus.INTERNAL_SERVER_ERROR.name())
-                .timestamp(LocalDateTime.now().format(FORMATTER))
                 .errors(getStackTrace(e))
+                .message("Internal Server Error")
+                .reason("Error occurred on the server side.")
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.name())
+                .timestamp(LocalDateTime.now().format(formatter))
                 .build();
     }
 

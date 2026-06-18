@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.EndpointHit;
+import ru.practicum.ParamDto;
 import ru.practicum.ViewStats;
 import ru.practicum.exception.ValidationException;
 import ru.practicum.model.EndpointHitEntity;
@@ -16,9 +17,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
+@Transactional(readOnly = true)
 public class StatServiceImpl implements StatService {
 
     private final StatRepository statRepository;
@@ -26,32 +29,25 @@ public class StatServiceImpl implements StatService {
     @Override
     @Transactional
     public void saveHit(EndpointHit dto) {
-        EndpointHitEntity entity = EndpointHitEntity.builder()
-                .app(dto.getApp())
-                .uri(dto.getUri())
-                .ip(dto.getIp())
-                .timestamp(dto.getTimestamp())
-                .build();
-
+        EndpointHitEntity entity = StatMapper.toHitEntity(dto);
         entity = statRepository.save(entity);
         log.info("New hit saved: {}", entity);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<ViewStats> getStats(LocalDateTime start, LocalDateTime end,
-                                    List<String> uris, boolean unique) {
+    public List<ViewStats> getStats(ParamDto paramDto) {
+        LocalDateTime start = paramDto.getStart();
+        LocalDateTime end = paramDto.getEnd();
+
         if (end.isBefore(start)) {
             throw new ValidationException("End date must not be before start date");
         }
 
         List<EndpointHitEntity> hits = statRepository.findAllByTimestampBetween(start, end);
-
-        List<EndpointHitEntity> filteredHits = filterByUris(hits, uris);
-
+        List<EndpointHitEntity> filteredHits = filterByUris(hits, paramDto.getUris());
         Map<GroupKey, List<String>> groupedHits = groupByAppAndUri(filteredHits);
 
-        return mapToViewStats(groupedHits, unique);
+        return mapToViewStats(groupedHits, paramDto.isUnique());
     }
 
     private List<EndpointHitEntity> filterByUris(List<EndpointHitEntity> hits, List<String> uris) {
@@ -59,8 +55,7 @@ public class StatServiceImpl implements StatService {
             return hits;
         }
         return hits.stream()
-                .filter(hit -> uris.stream()
-                        .anyMatch(uri -> hit.getUri().startsWith(uri)))
+                .filter(hit -> uris.contains(hit.getUri()))
                 .toList();
     }
 

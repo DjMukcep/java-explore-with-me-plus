@@ -38,7 +38,7 @@ class EndpointHitTest {
                 .app(validApp)
                 .uri(validUri)
                 .ip(validIp)
-                .timestamp(validTimestamp)
+                .timestamp(validTimestamp.toString())
                 .build();
     }
 
@@ -51,7 +51,12 @@ class EndpointHitTest {
 
     @Test
     void whenIdIsNegative_thenHasViolation() {
-        endpointHit = endpointHit.toBuilder().id(-1L).build();
+        endpointHit = EndpointHit.builder().id(-1L)
+                .app(validApp)
+                .uri(validUri)
+                .ip(validIp)
+                .timestamp(validTimestamp.toString())
+                .build();
 
         Set<ConstraintViolation<EndpointHit>> violations = validator.validate(endpointHit);
 
@@ -142,6 +147,6 @@ class EndpointHitTest {
         assertThat(violations, hasSize(1));
         ConstraintViolation<EndpointHit> violation = violations.iterator().next();
         assertThat(violation.getPropertyPath().toString(), is("timestamp"));
-        assertThat(violation.getMessage(), containsString("Can't be null"));
+        assertThat(violation.getMessage(), containsString("can't be empty"));
     }
 }

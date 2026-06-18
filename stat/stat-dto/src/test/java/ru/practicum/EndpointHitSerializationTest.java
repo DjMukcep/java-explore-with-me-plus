@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -36,7 +37,7 @@ public class EndpointHitSerializationTest {
                 .app(APP)
                 .uri(URI)
                 .ip(IP)
-                .timestamp(TIMESTAMP)
+                .timestamp(TIMESTAMP.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
                 .build();
 
         String json = objectMapper.writeValueAsString(endpointHit);
@@ -59,11 +60,11 @@ public class EndpointHitSerializationTest {
 
         EndpointHit dto = objectMapper.readValue(json, EndpointHit.class);
 
-        assertThat(dto.getId(), equalTo(ID));
+        assertThat(dto.getId(), equalTo(null));
         assertThat(dto.getApp(), equalTo(APP));
         assertThat(dto.getIp(), equalTo(IP));
         assertThat(dto.getUri(), equalTo(URI));
-        assertThat(dto.getTimestamp(), equalTo(TIMESTAMP));
+        assertThat(dto.getTimestamp(), equalTo(TIMESTAMP.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
     }
 
 }

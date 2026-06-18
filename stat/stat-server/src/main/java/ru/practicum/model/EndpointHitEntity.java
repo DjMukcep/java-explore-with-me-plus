@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Table(name = "endpoint_hits")
 @Getter
 @Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
