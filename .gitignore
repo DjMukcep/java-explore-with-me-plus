@@ -1,3 +1,4 @@
+# Скомпилированные файлы и архивы
 *.class
 *.log
 *.jar
@@ -9,18 +10,19 @@
 *.rar
 hs_err_pid*
 replay_pid*
+
+# Папки сборщиков (удалены опасные исключения с !)
 out/
 target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
+/out/
 
 ### OS files ###
 .DS_Store
 Thumbs.db
+
