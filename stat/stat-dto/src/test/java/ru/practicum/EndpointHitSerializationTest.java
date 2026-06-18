@@ -31,13 +31,13 @@ public class EndpointHitSerializationTest {
 
     @Test
     void testSerialize() throws Exception {
-        EndpointHit endpointHit = new EndpointHit();
-
-        endpointHit.setId(ID);
-        endpointHit.setApp(APP);
-        endpointHit.setIp(IP);
-        endpointHit.setUri(URI);
-        endpointHit.setTimestamp(TIMESTAMP);
+        EndpointHit endpointHit = EndpointHit.builder()
+                .id(ID)
+                .app(APP)
+                .uri(URI)
+                .ip(IP)
+                .timestamp(TIMESTAMP)
+                .build();
 
         String json = objectMapper.writeValueAsString(endpointHit);
 

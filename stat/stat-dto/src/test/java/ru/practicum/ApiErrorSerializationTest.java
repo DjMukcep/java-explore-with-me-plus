@@ -6,7 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -18,9 +18,8 @@ public class ApiErrorSerializationTest {
 
     private static final String MESSAGE = "Validation Error";
     private static final String REASON = "Field 'ip' must not be null";
-    private static final HttpStatus STATUS = HttpStatus.BAD_REQUEST;
-    private static final String ERRORS = "some stack trace";
-    private static final LocalDateTime TIMESTAMP = LocalDateTime.of(2000, 3, 12, 13, 31, 14);
+    private static final String STATUS = HttpStatus.BAD_REQUEST.name();
+    private static final List<String> ERRORS = List.of("some stack trace");
     private static final String TIMESTAMP_STRING = "2000-03-12 13:31:14";
 
     @BeforeAll
@@ -33,7 +32,7 @@ public class ApiErrorSerializationTest {
 
     @Test
     void testSerialize() throws Exception {
-        ApiError apiError = new ApiError(MESSAGE, REASON, STATUS, TIMESTAMP, ERRORS);
+        ApiError apiError = new ApiError(MESSAGE, REASON, STATUS, TIMESTAMP_STRING, ERRORS);
 
         String json = objectMapper.writeValueAsString(apiError);
 
@@ -41,7 +40,7 @@ public class ApiErrorSerializationTest {
         assertThat(json, containsString("\"reason\":\"Field 'ip' must not be null\""));
         assertThat(json, containsString("\"httpStatus\":\"BAD_REQUEST\""));
         assertThat(json, containsString("\"timestamp\":\"" + TIMESTAMP_STRING + "\""));
-        assertThat(json, containsString("\"errors\":\"some stack trace\""));
+        assertThat(json, containsString("\"errors\":[\"some stack trace\"]"));
     }
 
     @Test
@@ -50,14 +49,14 @@ public class ApiErrorSerializationTest {
                 "\"reason\":\"Field 'ip' must not be null\"," +
                 "\"httpStatus\":\"BAD_REQUEST\"," +
                 "\"timestamp\":\"" + TIMESTAMP_STRING + "\"," +
-                "\"errors\":\"some stack trace\"}";
+                "\"errors\":[\"some stack trace\"]}";
 
         ApiError dto = objectMapper.readValue(json, ApiError.class);
 
         assertThat(dto.getMessage(), equalTo(MESSAGE));
         assertThat(dto.getReason(), equalTo(REASON));
         assertThat(dto.getHttpStatus(), equalTo(STATUS));
-        assertThat(dto.getTimestamp(), equalTo(TIMESTAMP));
+        assertThat(dto.getTimestamp(), equalTo(TIMESTAMP_STRING));
         assertThat(dto.getErrors(), equalTo(ERRORS));
     }
 }

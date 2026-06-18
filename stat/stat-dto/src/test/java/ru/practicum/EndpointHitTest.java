@@ -33,12 +33,13 @@ class EndpointHitTest {
 
     @BeforeEach
     void setUp() {
-        endpointHit = new EndpointHit();
-        endpointHit.setId(validId);
-        endpointHit.setApp(validApp);
-        endpointHit.setUri(validUri);
-        endpointHit.setIp(validIp);
-        endpointHit.setTimestamp(validTimestamp);
+        endpointHit = EndpointHit.builder()
+                .id(validId)
+                .app(validApp)
+                .uri(validUri)
+                .ip(validIp)
+                .timestamp(validTimestamp)
+                .build();
     }
 
     @Test
@@ -50,7 +51,7 @@ class EndpointHitTest {
 
     @Test
     void whenIdIsNegative_thenHasViolation() {
-        endpointHit.setId(-1L);
+        endpointHit = endpointHit.toBuilder().id(-1L).build();
 
         Set<ConstraintViolation<EndpointHit>> violations = validator.validate(endpointHit);
 
@@ -58,18 +59,6 @@ class EndpointHitTest {
         ConstraintViolation<EndpointHit> violation = violations.iterator().next();
         assertThat(violation.getPropertyPath().toString(), is("id"));
         assertThat(violation.getMessage(), containsString("должно быть больше 0"));
-    }
-
-    @Test
-    void whenIdIsNull_thenHasViolation() {
-        endpointHit.setId(null);
-
-        Set<ConstraintViolation<EndpointHit>> violations = validator.validate(endpointHit);
-
-        assertThat(violations, hasSize(1));
-        ConstraintViolation<EndpointHit> violation = violations.iterator().next();
-        assertThat(violation.getPropertyPath().toString(), is("id"));
-        assertThat(violation.getMessage(), containsString("не должно равняться null"));
     }
 
     @Test
@@ -81,7 +70,7 @@ class EndpointHitTest {
         assertThat(violations, hasSize(1));
         ConstraintViolation<EndpointHit> violation = violations.iterator().next();
         assertThat(violation.getPropertyPath().toString(), is("app"));
-        assertThat(violation.getMessage(), containsString("не должно быть пустым"));
+        assertThat(violation.getMessage(), containsString("Can't be empty"));
     }
 
     @Test
@@ -93,7 +82,7 @@ class EndpointHitTest {
         assertThat(violations, hasSize(1));
         ConstraintViolation<EndpointHit> violation = violations.iterator().next();
         assertThat(violation.getPropertyPath().toString(), is("app"));
-        assertThat(violation.getMessage(), containsString("не должно быть пустым"));
+        assertThat(violation.getMessage(), containsString("Can't be empty"));
     }
 
     @Test
@@ -105,7 +94,7 @@ class EndpointHitTest {
         assertThat(violations, hasSize(1));
         ConstraintViolation<EndpointHit> violation = violations.iterator().next();
         assertThat(violation.getPropertyPath().toString(), is("uri"));
-        assertThat(violation.getMessage(), containsString("не должно быть пустым"));
+        assertThat(violation.getMessage(), containsString("Can't be empty"));
     }
 
     @Test
@@ -117,7 +106,7 @@ class EndpointHitTest {
         assertThat(violations, hasSize(1));
         ConstraintViolation<EndpointHit> violation = violations.iterator().next();
         assertThat(violation.getPropertyPath().toString(), is("uri"));
-        assertThat(violation.getMessage(), containsString("не должно быть пустым"));
+        assertThat(violation.getMessage(), containsString("Can't be empty"));
     }
 
     @Test
@@ -129,7 +118,7 @@ class EndpointHitTest {
         assertThat(violations, hasSize(1));
         ConstraintViolation<EndpointHit> violation = violations.iterator().next();
         assertThat(violation.getPropertyPath().toString(), is("ip"));
-        assertThat(violation.getMessage(), containsString("не должно быть пустым"));
+        assertThat(violation.getMessage(), containsString("Can't be empty"));
     }
 
     @Test
@@ -141,7 +130,7 @@ class EndpointHitTest {
         assertThat(violations, hasSize(1));
         ConstraintViolation<EndpointHit> violation = violations.iterator().next();
         assertThat(violation.getPropertyPath().toString(), is("ip"));
-        assertThat(violation.getMessage(), containsString("не должно быть пустым"));
+        assertThat(violation.getMessage(), containsString("Can't be empty"));
     }
 
     @Test
@@ -153,6 +142,6 @@ class EndpointHitTest {
         assertThat(violations, hasSize(1));
         ConstraintViolation<EndpointHit> violation = violations.iterator().next();
         assertThat(violation.getPropertyPath().toString(), is("timestamp"));
-        assertThat(violation.getMessage(), containsString("не должно равняться null"));
+        assertThat(violation.getMessage(), containsString("Can't be null"));
     }
 }
