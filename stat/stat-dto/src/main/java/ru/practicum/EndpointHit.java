@@ -15,16 +15,16 @@ import lombok.NoArgsConstructor;
 public class EndpointHit {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @Positive
+    @Positive(message = "can't be negative")
     private Long id;
 
-    @NotBlank(message = "Can't be empty")
+    @NotBlank(message = "can't be empty")
     private String app;
 
-    @NotBlank(message = "Can't be empty")
+    @NotBlank(message = "can't be empty")
     private String uri;
 
-    @NotBlank(message = "Can't be empty")
+    @NotBlank(message = "can't be empty")
     private String ip;
 
     @NotBlank(message = "can't be empty")
