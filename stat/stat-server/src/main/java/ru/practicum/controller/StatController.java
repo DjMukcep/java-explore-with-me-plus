@@ -17,7 +17,6 @@ public class StatController {
 
     private final StatService statService;
 
-
     @PostMapping("/hit")
     @ResponseStatus(HttpStatus.CREATED)
     public void create(@RequestBody @Valid EndpointHit endpointHit) {
