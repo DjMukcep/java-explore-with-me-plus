@@ -12,5 +12,9 @@ public class StatsRequest {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private List<String> uris;
-    private boolean unique;
+    private Boolean unique;
+
+    public boolean isUnique() {
+        return unique != null && unique;
+    }
 }

@@ -1,5 +1,6 @@
 package ru.practicum;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -9,13 +10,10 @@ import java.util.Collections;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class StatClient {
 
     private final RestClient restClient;
-
-    public StatClient(RestClient restClient) {
-        this.restClient = restClient;
-    }
 
     public void hit(EndpointHit endpointHit) {
         try {

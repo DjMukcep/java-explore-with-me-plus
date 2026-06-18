@@ -38,7 +38,7 @@ class EndpointHitTest {
                 .app(validApp)
                 .uri(validUri)
                 .ip(validIp)
-                .timestamp(validTimestamp)
+                .timestamp(validTimestamp.toString())
                 .build();
     }
 
@@ -51,14 +51,19 @@ class EndpointHitTest {
 
     @Test
     void whenIdIsNegative_thenHasViolation() {
-        endpointHit = endpointHit.toBuilder().id(-1L).build();
+        endpointHit = EndpointHit.builder().id(-1L)
+                .app(validApp)
+                .uri(validUri)
+                .ip(validIp)
+                .timestamp(validTimestamp.toString())
+                .build();
 
         Set<ConstraintViolation<EndpointHit>> violations = validator.validate(endpointHit);
 
         assertThat(violations, hasSize(1));
         ConstraintViolation<EndpointHit> violation = violations.iterator().next();
         assertThat(violation.getPropertyPath().toString(), is("id"));
-        assertThat(violation.getMessage(), containsString("должно быть больше 0"));
+        assertThat(violation.getMessage(), containsString("can't be negative"));
     }
 
     @Test
@@ -70,7 +75,7 @@ class EndpointHitTest {
         assertThat(violations, hasSize(1));
         ConstraintViolation<EndpointHit> violation = violations.iterator().next();
         assertThat(violation.getPropertyPath().toString(), is("app"));
-        assertThat(violation.getMessage(), containsString("Can't be empty"));
+        assertThat(violation.getMessage(), containsString("can't be empty"));
     }
 
     @Test
@@ -82,7 +87,7 @@ class EndpointHitTest {
         assertThat(violations, hasSize(1));
         ConstraintViolation<EndpointHit> violation = violations.iterator().next();
         assertThat(violation.getPropertyPath().toString(), is("app"));
-        assertThat(violation.getMessage(), containsString("Can't be empty"));
+        assertThat(violation.getMessage(), containsString("can't be empty"));
     }
 
     @Test
@@ -94,7 +99,7 @@ class EndpointHitTest {
         assertThat(violations, hasSize(1));
         ConstraintViolation<EndpointHit> violation = violations.iterator().next();
         assertThat(violation.getPropertyPath().toString(), is("uri"));
-        assertThat(violation.getMessage(), containsString("Can't be empty"));
+        assertThat(violation.getMessage(), containsString("can't be empty"));
     }
 
     @Test
@@ -106,7 +111,7 @@ class EndpointHitTest {
         assertThat(violations, hasSize(1));
         ConstraintViolation<EndpointHit> violation = violations.iterator().next();
         assertThat(violation.getPropertyPath().toString(), is("uri"));
-        assertThat(violation.getMessage(), containsString("Can't be empty"));
+        assertThat(violation.getMessage(), containsString("can't be empty"));
     }
 
     @Test
@@ -118,7 +123,7 @@ class EndpointHitTest {
         assertThat(violations, hasSize(1));
         ConstraintViolation<EndpointHit> violation = violations.iterator().next();
         assertThat(violation.getPropertyPath().toString(), is("ip"));
-        assertThat(violation.getMessage(), containsString("Can't be empty"));
+        assertThat(violation.getMessage(), containsString("can't be empty"));
     }
 
     @Test
@@ -130,7 +135,7 @@ class EndpointHitTest {
         assertThat(violations, hasSize(1));
         ConstraintViolation<EndpointHit> violation = violations.iterator().next();
         assertThat(violation.getPropertyPath().toString(), is("ip"));
-        assertThat(violation.getMessage(), containsString("Can't be empty"));
+        assertThat(violation.getMessage(), containsString("can't be empty"));
     }
 
     @Test
@@ -142,6 +147,6 @@ class EndpointHitTest {
         assertThat(violations, hasSize(1));
         ConstraintViolation<EndpointHit> violation = violations.iterator().next();
         assertThat(violation.getPropertyPath().toString(), is("timestamp"));
-        assertThat(violation.getMessage(), containsString("Can't be null"));
+        assertThat(violation.getMessage(), containsString("can't be empty"));
     }
 }

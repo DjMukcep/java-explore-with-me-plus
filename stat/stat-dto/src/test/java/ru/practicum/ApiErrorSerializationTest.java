@@ -32,13 +32,13 @@ public class ApiErrorSerializationTest {
 
     @Test
     void testSerialize() throws Exception {
-        ApiError apiError = new ApiError(MESSAGE, REASON, STATUS, TIMESTAMP_STRING, ERRORS);
+        ApiError apiError = new ApiError(ERRORS, MESSAGE, REASON, STATUS, TIMESTAMP_STRING);
 
         String json = objectMapper.writeValueAsString(apiError);
 
         assertThat(json, containsString("\"message\":\"Validation Error\""));
         assertThat(json, containsString("\"reason\":\"Field 'ip' must not be null\""));
-        assertThat(json, containsString("\"httpStatus\":\"BAD_REQUEST\""));
+        assertThat(json, containsString("\"status\":\"BAD_REQUEST\""));
         assertThat(json, containsString("\"timestamp\":\"" + TIMESTAMP_STRING + "\""));
         assertThat(json, containsString("\"errors\":[\"some stack trace\"]"));
     }
@@ -47,7 +47,7 @@ public class ApiErrorSerializationTest {
     void testDeserialize() throws Exception {
         String json = "{\"message\":\"Validation Error\"," +
                 "\"reason\":\"Field 'ip' must not be null\"," +
-                "\"httpStatus\":\"BAD_REQUEST\"," +
+                "\"status\":\"BAD_REQUEST\"," +
                 "\"timestamp\":\"" + TIMESTAMP_STRING + "\"," +
                 "\"errors\":[\"some stack trace\"]}";
 
@@ -55,7 +55,7 @@ public class ApiErrorSerializationTest {
 
         assertThat(dto.getMessage(), equalTo(MESSAGE));
         assertThat(dto.getReason(), equalTo(REASON));
-        assertThat(dto.getHttpStatus(), equalTo(STATUS));
+        assertThat(dto.getStatus(), equalTo(STATUS));
         assertThat(dto.getTimestamp(), equalTo(TIMESTAMP_STRING));
         assertThat(dto.getErrors(), equalTo(ERRORS));
     }
