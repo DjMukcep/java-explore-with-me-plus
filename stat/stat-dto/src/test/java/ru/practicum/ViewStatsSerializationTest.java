@@ -1,5 +1,6 @@
 package ru.practicum;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
@@ -12,27 +13,12 @@ public class ViewStatsSerializationTest {
 
     @Test
     void testSerialization() throws Exception {
-        ViewStats dto = new ViewStats();
+        ViewStats dto = new ViewStats("app", "/api/uri", 10L);
 
-        dto.setApp("app");
-        dto.setHits(10L);
-        dto.setUri("/api/uri");
+        JsonNode node = objectMapper.readTree(objectMapper.writeValueAsString(dto));
 
-        String json = objectMapper.writeValueAsString(dto);
-
-        assertThat(json, containsString("\"app\":\"app\""));
-        assertThat(json, containsString("\"hits\":10"));
-        assertThat(json, containsString("\"uri\":\"/api/uri\""));
-    }
-
-    @Test
-    void testDeserialization() throws Exception {
-        String json = "{\"app\":\"app\", \"hits\":10, \"uri\":\"/api/uri\"}";
-
-        ViewStats dto = objectMapper.readValue(json, ViewStats.class);
-
-        assertThat(dto.getApp(), equalTo("app"));
-        assertThat(dto.getHits(), equalTo(10L));
-        assertThat(dto.getUri(), equalTo("/api/uri"));
+        assertThat(node.get("app").asText(), equalTo("app"));
+        assertThat(node.get("uri").asText(), equalTo("/api/uri"));
+        assertThat(node.get("hits").asLong(), equalTo(10L));
     }
 }

@@ -1,7 +1,7 @@
 package ru.practicum;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 
 public class EndpointHitSerializationTest {
@@ -20,14 +19,14 @@ public class EndpointHitSerializationTest {
     private static final String APP = "some-app";
     private static final String IP = "109.11.31.32";
     private static final String URI = "/api/uri";
-    private static final LocalDateTime TIMESTAMP = LocalDateTime.of(2000, 3, 12, 13, 31, 14);
+    private static final LocalDateTime TIMESTAMP =
+            LocalDateTime.of(2000, 3, 12, 13, 31, 14);
     private static final String TIMESTAMP_STRING = "2000-03-12 13:31:14";
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @BeforeAll
     static void init() {
         objectMapper = new ObjectMapper();
-        JavaTimeModule javaTimeModule = new JavaTimeModule();
-        objectMapper.registerModule(javaTimeModule);
     }
 
     @Test
@@ -37,17 +36,17 @@ public class EndpointHitSerializationTest {
                 .app(APP)
                 .uri(URI)
                 .ip(IP)
-                .timestamp(TIMESTAMP.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                .timestamp(TIMESTAMP.format(formatter))
                 .build();
 
         String json = objectMapper.writeValueAsString(endpointHit);
+        JsonNode node = objectMapper.readTree(json);
 
-        assertThat(json, containsString("\"id\":10"));
-        assertThat(json, containsString("\"app\":\"some-app\""));
-        assertThat(json, containsString("\"ip\":\"109.11.31.32\""));
-        assertThat(json, containsString("\"uri\":\"/api/uri\""));
-        assertThat(json, containsString("\"timestamp\":\"" + TIMESTAMP_STRING + "\""));
-
+        assertThat(node.get("id").asLong(), equalTo(ID));
+        assertThat(node.get("app").asText(), equalTo(APP));
+        assertThat(node.get("uri").asText(), equalTo(URI));
+        assertThat(node.get("ip").asText(), equalTo(IP));
+        assertThat(node.get("timestamp").asText(), equalTo(TIMESTAMP_STRING));
     }
 
     @Test
@@ -64,7 +63,7 @@ public class EndpointHitSerializationTest {
         assertThat(dto.getApp(), equalTo(APP));
         assertThat(dto.getIp(), equalTo(IP));
         assertThat(dto.getUri(), equalTo(URI));
-        assertThat(dto.getTimestamp(), equalTo(TIMESTAMP.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+        assertThat(dto.getTimestamp(), equalTo(TIMESTAMP.format(formatter)));
     }
 
 }

@@ -7,6 +7,7 @@ import ru.practicum.model.EndpointHitEntity;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 @UtilityClass
 public class StatMapper {
@@ -15,7 +16,14 @@ public class StatMapper {
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public static EndpointHitEntity toHitEntity(EndpointHit endpointHit) {
-        LocalDateTime time = LocalDateTime.parse(endpointHit.getTimestamp(), formatter);
+        LocalDateTime time;
+
+        try {
+            time = LocalDateTime.parse(endpointHit.getTimestamp(), formatter);
+        } catch (DateTimeParseException e) {
+            throw new ValidationException("Invalid time format: " + endpointHit.getTimestamp());
+        }
+
 
         if (time.isAfter(LocalDateTime.now())) {
             throw new ValidationException("time of visit can't be in the future");

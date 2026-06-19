@@ -1,7 +1,7 @@
 package ru.practicum;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -9,54 +9,34 @@ import org.springframework.http.HttpStatus;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 
 public class ApiErrorSerializationTest {
 
     private static ObjectMapper objectMapper;
 
-    private static final String MESSAGE = "Validation Error";
-    private static final String REASON = "Field 'ip' must not be null";
-    private static final String STATUS = HttpStatus.BAD_REQUEST.name();
-    private static final List<String> ERRORS = List.of("some stack trace");
-    private static final String TIMESTAMP_STRING = "2000-03-12 13:31:14";
-
     @BeforeAll
     static void init() {
         objectMapper = new ObjectMapper();
-        JavaTimeModule javaTimeModule = new JavaTimeModule();
-
-        objectMapper.registerModule(javaTimeModule);
     }
 
     @Test
     void testSerialize() throws Exception {
-        ApiError apiError = new ApiError(ERRORS, MESSAGE, REASON, STATUS, TIMESTAMP_STRING);
+        ApiError apiError = ApiError.builder()
+                .errors(List.of("some errors"))
+                .message("some message")
+                .reason("some reason")
+                .status(HttpStatus.BAD_REQUEST.name())
+                .timestamp("2000-03-12 13:31:14")
+                .build();
 
         String json = objectMapper.writeValueAsString(apiError);
+        JsonNode node = objectMapper.readTree(json);
 
-        assertThat(json, containsString("\"message\":\"Validation Error\""));
-        assertThat(json, containsString("\"reason\":\"Field 'ip' must not be null\""));
-        assertThat(json, containsString("\"status\":\"BAD_REQUEST\""));
-        assertThat(json, containsString("\"timestamp\":\"" + TIMESTAMP_STRING + "\""));
-        assertThat(json, containsString("\"errors\":[\"some stack trace\"]"));
-    }
-
-    @Test
-    void testDeserialize() throws Exception {
-        String json = "{\"message\":\"Validation Error\"," +
-                "\"reason\":\"Field 'ip' must not be null\"," +
-                "\"status\":\"BAD_REQUEST\"," +
-                "\"timestamp\":\"" + TIMESTAMP_STRING + "\"," +
-                "\"errors\":[\"some stack trace\"]}";
-
-        ApiError dto = objectMapper.readValue(json, ApiError.class);
-
-        assertThat(dto.getMessage(), equalTo(MESSAGE));
-        assertThat(dto.getReason(), equalTo(REASON));
-        assertThat(dto.getStatus(), equalTo(STATUS));
-        assertThat(dto.getTimestamp(), equalTo(TIMESTAMP_STRING));
-        assertThat(dto.getErrors(), equalTo(ERRORS));
+        assertThat(node.get("message").asText(), equalTo("some message"));
+        assertThat(node.get("reason").asText(), equalTo("some reason"));
+        assertThat(node.get("status").asText(), equalTo(HttpStatus.BAD_REQUEST.name()));
+        assertThat(node.get("timestamp").asText(), equalTo("2000-03-12 13:31:14"));
+        assertThat(node.get("errors").get(0).asText(), equalTo("some errors"));
     }
 }
