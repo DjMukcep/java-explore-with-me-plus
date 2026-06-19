@@ -50,23 +50,6 @@ class EndpointHitTest {
     }
 
     @Test
-    void whenIdIsNegative_thenHasViolation() {
-        endpointHit = EndpointHit.builder().id(-1L)
-                .app(validApp)
-                .uri(validUri)
-                .ip(validIp)
-                .timestamp(validTimestamp.toString())
-                .build();
-
-        Set<ConstraintViolation<EndpointHit>> violations = validator.validate(endpointHit);
-
-        assertThat(violations, hasSize(1));
-        ConstraintViolation<EndpointHit> violation = violations.iterator().next();
-        assertThat(violation.getPropertyPath().toString(), is("id"));
-        assertThat(violation.getMessage(), containsString("can't be negative"));
-    }
-
-    @Test
     void whenAppIsBlank_thenHasViolation() {
         endpointHit.setApp(" ");
 

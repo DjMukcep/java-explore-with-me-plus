@@ -1,5 +1,6 @@
 package ru.practicum;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
@@ -8,9 +9,7 @@ import org.springframework.web.client.RestClient;
 public class RestConfig {
 
     @Bean
-    RestClient restClient() {
-        return RestClient.builder()
-                .baseUrl("http://localhost:9090")
-                .build();
+    RestClient restClient(RestClient.Builder builder, @Value("${client.url}") String clientUrl) {
+        return builder.baseUrl(clientUrl).build();
     }
 }

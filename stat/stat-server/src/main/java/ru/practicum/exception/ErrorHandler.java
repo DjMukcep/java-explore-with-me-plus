@@ -48,7 +48,7 @@ public class ErrorHandler {
         log.error("Ошибка валидации: {}",e.getMessage());
 
         return ApiError.builder()
-                .errors(getStackTrace(e))
+                .errors(List.of(e.getMessage() != null ? e.getMessage() : "Validation failed"))
                 .message(e.getMessage())
                 .reason("Incorrectly made request.")
                 .status(HttpStatus.BAD_REQUEST.name())
@@ -62,18 +62,11 @@ public class ErrorHandler {
         log.error("Внутренняя ошибка: {} ", e.getMessage(), e);
 
         return ApiError.builder()
-                .errors(getStackTrace(e))
+                .errors(List.of(e.getMessage() != null ? e.getMessage() : "Internal Server Error"))
                 .message("Internal Server Error")
                 .reason("Error occurred on the server side.")
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.name())
                 .timestamp(LocalDateTime.now().format(formatter))
                 .build();
     }
-
-    private static List<String> getStackTrace(Exception e) {
-        return Arrays.stream(e.getStackTrace())
-                .map(StackTraceElement::toString)
-                .toList();
-    }
-
 }

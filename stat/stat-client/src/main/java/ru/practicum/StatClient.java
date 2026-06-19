@@ -1,6 +1,7 @@
 package ru.practicum;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -10,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class StatClient {
 
@@ -23,7 +25,7 @@ public class StatClient {
                     .retrieve()
                     .toBodilessEntity();
         } catch (RestClientException e) {
-            System.out.println("Stats service unavailable: " + e.getMessage());
+            log.error("Stats service unavailable: {}", e.getMessage(), e);
         }
     }
 
@@ -35,13 +37,13 @@ public class StatClient {
                             .queryParam("start", statsRequest.getStartTime())
                             .queryParam("end", statsRequest.getEndTime())
                             .queryParam("uris", statsRequest.getUris())
-                            .queryParam("unique", statsRequest.isUnique())
+                            .queryParam("unique", statsRequest.getUnique())
                             .build())
                     .retrieve()
                     .body(new ParameterizedTypeReference<List<ViewStats>>() {
                     });
         } catch (RestClientException e) {
-            System.out.println("Stats service unavailable: " + e.getMessage());
+            log.error("Stats service unavailable: {}", e.getMessage(), e);
             return  Collections.emptyList();
         }
     }

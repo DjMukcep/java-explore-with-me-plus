@@ -9,12 +9,8 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class StatsRequest {
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
+    private String startTime;
+    private String endTime;
     private List<String> uris;
     private Boolean unique;
-
-    public boolean isUnique() {
-        return unique != null && unique;
-    }
 }

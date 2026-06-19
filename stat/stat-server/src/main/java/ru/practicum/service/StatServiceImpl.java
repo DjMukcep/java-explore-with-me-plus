@@ -12,10 +12,9 @@ import ru.practicum.model.EndpointHitEntity;
 import ru.practicum.repository.StatRepository;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
+import java.util.Collection;
+
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -38,47 +37,22 @@ public class StatServiceImpl implements StatService {
     public List<ViewStats> getStats(ParamDto paramDto) {
         LocalDateTime start = paramDto.getStart();
         LocalDateTime end = paramDto.getEnd();
+        Collection<String> uris = (paramDto.getUris() != null && !paramDto.getUris().isEmpty())
+                ? paramDto.getUris()
+                : null;
 
         if (end.isBefore(start)) {
-            throw new ValidationException("End date must not be before start date");
+            throw new ValidationException("End time is before start time");
         }
 
-        List<EndpointHitEntity> hits = statRepository.findAllByTimestampBetween(start, end);
-        List<EndpointHitEntity> filteredHits = filterByUris(hits, paramDto.getUris());
-        Map<GroupKey, List<String>> groupedHits = groupByAppAndUri(filteredHits);
-
-        return mapToViewStats(groupedHits, paramDto.isUnique());
-    }
-
-    private List<EndpointHitEntity> filterByUris(List<EndpointHitEntity> hits, List<String> uris) {
-        if (uris == null || uris.isEmpty()) {
-            return hits;
+        if (uris == null) {
+            return paramDto.isUnique()
+                    ? statRepository.getAllUniqueViewStats(start, end)
+                    : statRepository.getAllViewStats(start, end);
         }
-        return hits.stream()
-                .filter(hit -> uris.contains(hit.getUri()))
-                .toList();
-    }
 
-    private Map<GroupKey, List<String>> groupByAppAndUri(List<EndpointHitEntity> hits) {
-        return hits.stream()
-                .collect(Collectors.groupingBy(
-                        hit -> new GroupKey(hit.getApp(), hit.getUri()),
-                        Collectors.mapping(EndpointHitEntity::getIp, Collectors.toList())
-                ));
-    }
-
-    private List<ViewStats> mapToViewStats(Map<GroupKey, List<String>> groupedHits, boolean unique) {
-        return groupedHits.entrySet().stream()
-                .map(entry -> new ViewStats(
-                        entry.getKey().app(),
-                        entry.getKey().uri(),
-                        unique ? entry.getValue().stream().distinct().count()
-                                : entry.getValue().size()
-                ))
-                .sorted(Comparator.comparingLong(ViewStats::getHits).reversed())
-                .collect(Collectors.toList());
-    }
-
-    private record GroupKey(String app, String uri) {
+        return paramDto.isUnique()
+                ? statRepository.getUniqueViewStatsByUris(uris, start, end)
+                : statRepository.getViewStatsByUris(uris, start, end);
     }
 }

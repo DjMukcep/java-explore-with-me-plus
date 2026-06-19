@@ -15,7 +15,6 @@ import lombok.NoArgsConstructor;
 public class EndpointHit {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @Positive(message = "can't be negative")
     private Long id;
 
     @NotBlank(message = "can't be empty")
