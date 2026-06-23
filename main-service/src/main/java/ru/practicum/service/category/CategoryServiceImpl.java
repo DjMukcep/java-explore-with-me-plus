@@ -29,6 +29,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDto update(long id, CategoryDto payload) {
+        categoryRepository.findById(id).orElseThrow(() -> new NotFoundException("Категория с таким ID не существует!"));
         categoryRepository.findByName(payload.getName()).ifPresent(category -> {
             if (category.getId() != id) {
                 throw new ConflictException("Категория уже существует!");
