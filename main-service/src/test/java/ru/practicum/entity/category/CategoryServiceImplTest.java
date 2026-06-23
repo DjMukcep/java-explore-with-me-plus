@@ -9,8 +9,6 @@ import ru.practicum.dto.category.CategoryDto;
 import ru.practicum.dto.category.NewCategoryDto;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
-import ru.practicum.model.Category;
-import ru.practicum.repository.CategoryRepository;
 
 import java.util.Optional;
 
@@ -47,7 +45,7 @@ class CategoryServiceImplTest {
                 .build();
 
         Category category = Category.builder()
-                .id(1)
+                .id(1L)
                 .name("Test Event")
                 .build();
 
@@ -64,7 +62,7 @@ class CategoryServiceImplTest {
     @Test
     void delete_shouldDeleteCategory() {
         Category category = Category.builder()
-                .id(1)
+                .id(1L)
                 .name("Event name")
                 .build();
         when(categoryRepository.findById(1L))
@@ -92,7 +90,7 @@ class CategoryServiceImplTest {
                 .build();
 
         Category category = Category.builder()
-                .id(1)
+                .id(1L)
                 .name("Event name")
                 .build();
 
@@ -131,7 +129,7 @@ class CategoryServiceImplTest {
                 .build();
 
         Category category = Category.builder()
-                .id(1)
+                .id(1L)
                 .name("Event name 1")
                 .build();
 

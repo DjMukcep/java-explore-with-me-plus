@@ -6,7 +6,6 @@ import ru.practicum.dto.category.CategoryDto;
 import ru.practicum.dto.category.NewCategoryDto;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
-import ru.practicum.repository.CategoryRepository;
 
 @Service
 @RequiredArgsConstructor
