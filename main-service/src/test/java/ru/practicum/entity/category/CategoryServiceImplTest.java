@@ -1,4 +1,4 @@
-package ru.practicum.service.category;
+package ru.practicum.entity.category;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,8 +14,8 @@ import ru.practicum.repository.CategoryRepository;
 
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
