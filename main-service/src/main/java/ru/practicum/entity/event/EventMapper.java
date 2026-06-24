@@ -34,7 +34,7 @@ public class EventMapper {
         }
 
         if (time.isBefore(LocalDateTime.now())) {
-            throw new ValidationException("Event date should be in future, but has: " + time.format(FORMATTER));
+            throw new ValidationException("eventDate must contain future date, but was: " + time.format(FORMATTER));
         }
 
         entity.setEventDate(LocalDateTime.parse(eventDto.getEventDate(), FORMATTER));

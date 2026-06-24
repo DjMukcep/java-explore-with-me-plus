@@ -39,10 +39,6 @@ public class EventServiceImpl implements EventService {
         User user = userService.findById(userId);
         CategoryDto category = categoryService.findById(dto.getCategory());
 
-        if (LocalDateTime.parse(dto.getEventDate(), FORMATTER).isBefore(LocalDateTime.now())) {
-            throw new ConditionsNotMetException("eventDate must contain future date, but was " + dto.getEventDate());
-        }
-
         Event event = EventMapper.mapToEntity(dto, category, user);
 
         event = eventRepository.save(event);
