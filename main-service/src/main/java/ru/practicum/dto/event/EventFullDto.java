@@ -5,8 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.dto.Location;
-import ru.practicum.dto.category.CategoryDto;
 import ru.practicum.dto.UserShortDto;
+import ru.practicum.dto.category.CategoryDto;
 
 @Data
 @AllArgsConstructor
