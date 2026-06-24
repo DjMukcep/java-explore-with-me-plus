@@ -1,4 +1,4 @@
-package ru.practicum.dto;
+package ru.practicum.dto.user;
 
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;

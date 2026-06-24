@@ -1,8 +1,8 @@
 package ru.practicum.entity.user;
 
-import ru.practicum.dto.NewUserRequest;
-import ru.practicum.dto.UserDto;
-import ru.practicum.dto.UserParamDto;
+import ru.practicum.dto.user.NewUserRequest;
+import ru.practicum.dto.user.UserDto;
+import ru.practicum.dto.user.UserParamDto;
 
 import java.util.List;
 
@@ -14,5 +14,5 @@ public interface UserService {
 
     void deleteUserById(Long userId);
 
-    public User findById(Long userId);
+    User findById(Long userId);
 }

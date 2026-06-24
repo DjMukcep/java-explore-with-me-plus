@@ -1,8 +1,9 @@
 package ru.practicum.entity.user;
 
 import lombok.experimental.UtilityClass;
-import ru.practicum.dto.NewUserRequest;
-import ru.practicum.dto.UserDto;
+import ru.practicum.dto.user.NewUserRequest;
+import ru.practicum.dto.user.UserDto;
+import ru.practicum.dto.user.UserShortDto;
 
 import java.util.List;
 
@@ -29,5 +30,13 @@ public class UserMapper {
         return users.stream()
                 .map(UserMapper::toUserDto)
                 .toList();
+    }
+
+    public static UserShortDto toShortDto(final User user) {
+
+        return UserShortDto.builder()
+                .name(user.getName())
+                .id(user.getId())
+                .build();
     }
 }

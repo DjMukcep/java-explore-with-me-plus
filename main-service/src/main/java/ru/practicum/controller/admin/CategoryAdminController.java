@@ -14,7 +14,6 @@ import ru.practicum.entity.category.CategoryService;
  * /admin/categories
  * /admin/categories/{catId}
  */
-
 @RestController
 @RequestMapping(path = "/admin/categories")
 @RequiredArgsConstructor
