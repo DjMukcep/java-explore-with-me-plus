@@ -45,9 +45,9 @@ public class UserServiceImpl implements UserService {
             return UserMapper.toUserDtos(userRepository.findAllByIdIn(ids));
         }
 
-        int offset = userParamDto.getFrom() / userParamDto.getSize();
+        int page = userParamDto.getFrom() / userParamDto.getSize();
         int pageSize = userParamDto.getSize();
-        List<User> users = userRepository.findAll(PageRequest.of(offset,pageSize)).getContent();
+        List<User> users = userRepository.findAll(PageRequest.of(page,pageSize)).getContent();
 
         return UserMapper.toUserDtos(users);
     }
