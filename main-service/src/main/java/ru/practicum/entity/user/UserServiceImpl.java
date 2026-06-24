@@ -45,9 +45,9 @@ public class UserServiceImpl implements UserService {
             return UserMapper.toUserDtos(userRepository.findAllByIdIn(ids));
         }
 
-        int offset = userParamDto.getFrom() / userParamDto.getSize();
+        int page = userParamDto.getFrom() / userParamDto.getSize();
         int pageSize = userParamDto.getSize();
-        List<User> users = userRepository.findAll(PageRequest.of(offset,pageSize)).getContent();
+        List<User> users = userRepository.findAll(PageRequest.of(page,pageSize)).getContent();
 
         return UserMapper.toUserDtos(users);
     }
@@ -60,5 +60,11 @@ public class UserServiceImpl implements UserService {
         }
 
         userRepository.deleteById(userId);
+    }
+
+    @Override
+    public User findById(Long userId) {
+        return userRepository.findById(userId).orElseThrow(
+                () -> new NotFoundException("User with this id does not exist"));
     }
 }
