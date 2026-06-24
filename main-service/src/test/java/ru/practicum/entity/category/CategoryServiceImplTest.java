@@ -5,14 +5,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import ru.practicum.dto.category.CategoriesParamDto;
 import ru.practicum.dto.category.CategoryDto;
 import ru.practicum.dto.category.NewCategoryDto;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -145,5 +151,42 @@ class CategoryServiceImplTest {
                 .hasMessage("Категория уже существует!");
 
         verifyNoMoreInteractions(categoryRepository);
+    }
+
+    @Test
+    void findAll_shouldReturnCategories() {
+        CategoriesParamDto params = CategoriesParamDto.builder()
+                .from(0)
+                .size(10)
+                .build();
+
+        List<Category> categories = List.of(
+                Category.builder().id(1L).name("Category 1").build(),
+                Category.builder().id(2L).name("Category 2").build()
+        );
+
+        when(categoryRepository.findAll(any(Pageable.class)))
+                .thenReturn(new PageImpl<>(categories));
+
+        List<CategoryDto> result = categoryService.findAll(params);
+
+        assertEquals(2, result.size());
+
+        verify(categoryRepository).findAll(PageRequest.of(0, 10));
+    }
+
+    @Test
+    void findById_shouldReturnCategory() {
+        Category category = Category.builder().id(1L).name("Category 1").build();
+
+        when(categoryRepository.findById(anyLong()))
+                .thenReturn(Optional.ofNullable(category));
+
+        CategoryDto result = categoryService.findById(1L);
+
+        assertEquals(1L, result.getId());
+        assertEquals("Category 1", result.getName());
+
+        verify(categoryRepository).findById(1L);
     }
 }
