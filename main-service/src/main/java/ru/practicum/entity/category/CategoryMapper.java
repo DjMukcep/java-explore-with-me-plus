@@ -25,4 +25,11 @@ public class CategoryMapper {
                 .name(payload.getName())
                 .build();
     }
+
+    public static Category toEntity(CategoryDto dto) {
+        return Category.builder()
+                .id(dto.getId())
+                .name(dto.getName())
+                .build();
+    }
 }

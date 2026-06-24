@@ -2,6 +2,7 @@ package ru.practicum.entity.event;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -12,9 +13,13 @@ import ru.practicum.EndpointHit;
 import ru.practicum.StatClient;
 import ru.practicum.StatsRequest;
 import ru.practicum.ViewStats;
+import ru.practicum.dto.category.CategoryDto;
 import ru.practicum.dto.event.*;
 import ru.practicum.entity.category.Category;
 import ru.practicum.entity.category.CategoryRepository;
+import ru.practicum.entity.category.CategoryService;
+import ru.practicum.entity.user.User;
+import ru.practicum.entity.user.UserService;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
@@ -28,17 +33,53 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class EventServiceImpl implements EventService {
 
-    private final EventRepository eventRepository;
-    private final CategoryRepository categoryRepository;
     private final StatClient statClient;
+    private final EventRepository eventRepository;
+    private final CategoryService categoryService;
+    private final CategoryRepository categoryRepository;
+    private final UserService userService;
+
     private static final String APP_NAME = "ewm-main-service";
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    // ---------- Admin ----------
+    // ---------- Private (коллега) ----------
+
+    @Override
+    @Transactional
+    public EventFullDto create(Long userId, NewEventDto dto) {
+        User user = userService.findById(userId);
+        CategoryDto categoryDto = categoryService.findById(dto.getCategory());
+        Category category = categoryRepository.findById(categoryDto.getId())
+                .orElseThrow(() -> new NotFoundException("Category not found"));
+
+        Event event = EventMapper.mapToEntity(dto, category, user);
+        event = eventRepository.save(event);
+
+        log.info("event created {}", event);
+
+        return EventMapper.toEventFullDto(event, 0L, 0L);
+    }
+
+    @Override
+    public EventFullDto getById(Long userId, Long eventId) {
+        User user = userService.findById(userId);
+
+        Event event = eventRepository.findById(eventId).orElseThrow(
+                () -> new NotFoundException(String.format("Event with id '%d' not found", eventId))
+        );
+
+        Map<Long, Long> viewsMap = getViewsMap(Collections.singletonList(event));
+        Long views = viewsMap.getOrDefault(event.getId(), 0L);
+
+        return EventMapper.toEventFullDto(event, 0L, views);
+    }
+
+    // ---------- Admin (наши) ----------
 
     @Override
     public List<EventFullDto> getEventsByAdmin(EventAdminParamDto params) {
@@ -112,7 +153,7 @@ public class EventServiceImpl implements EventService {
         }
     }
 
-    // ---------- Public ----------
+    // ---------- Public (наши) ----------
 
     @Override
     public List<EventShortDto> getPublishedEvents(EventPublicParamDto params, HttpServletRequest request) {
@@ -176,7 +217,6 @@ public class EventServiceImpl implements EventService {
     }
 
     private List<EventShortDto> filterAvailable(List<EventShortDto> events) {
-        // Заглушка до реализации RequestRepository
         return events;
     }
 

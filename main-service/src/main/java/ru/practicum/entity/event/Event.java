@@ -2,6 +2,7 @@ package ru.practicum.entity.event;
 
 import jakarta.persistence.*;
 import lombok.*;
+import ru.practicum.entity.Location;
 import ru.practicum.entity.category.Category;
 import ru.practicum.entity.user.User;
 
@@ -11,10 +12,12 @@ import java.time.LocalDateTime;
 @Table(name = "events")
 @Getter
 @Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Event {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -36,14 +39,11 @@ public class Event {
     @Column(name = "event_date", nullable = false)
     private LocalDateTime eventDate;
 
-    @Column(name = "created_on")
+    @Column(name = "created_on", nullable = false)
     private LocalDateTime createdOn;
 
-    @Column(nullable = false)
-    private Float lat;
-
-    @Column(nullable = false)
-    private Float lon;
+    @Embedded
+    private Location location;
 
     @Column(nullable = false)
     private Boolean paid;
@@ -57,15 +57,15 @@ public class Event {
     @Column(name = "request_moderation", nullable = false)
     private Boolean requestModeration;
 
-    @Column(nullable = false, length = 25)
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 25)
     private EventState state;
 
     @Column(nullable = false, length = 120)
     private String title;
 
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Event)) return false;
         return id != null && id.equals(((Event) o).id);

@@ -4,13 +4,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-public interface EventRepository extends JpaRepository<Event, Long> {
+public interface EventRepository extends JpaRepository<Event, Long>, QuerydslPredicateExecutor<Event> {
 
     @Query("SELECT e FROM Event e " +
             "WHERE (:users IS NULL OR e.initiator.id IN :users) " +
@@ -42,4 +43,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             Pageable pageable);
 
     Optional<Event> findByIdAndState(Long id, EventState state);
+
+    List<Event> findAllByInitiatorId(Long initiatorId, Pageable pageable);
+
+    Optional<Event> findByIdAndInitiatorId(Long eventId, Long initiatorId);
 }

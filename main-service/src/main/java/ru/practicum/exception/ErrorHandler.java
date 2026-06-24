@@ -83,6 +83,18 @@ public class ErrorHandler {
                 .build();
     }
 
+    @ExceptionHandler(ConditionsNotMetException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError handleConditionsNotMetException(final ConditionsNotMetException e) {
+        return ApiError.builder()
+                .errors(null)
+                .message(e.getMessage())
+                .reason("Logical conditions hasn't met.")
+                .status(HttpStatus.CONFLICT.name())
+                .timestamp(LocalDateTime.now().format(formatter))
+                .build();
+    }
+
     @ExceptionHandler(ForbiddenException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ApiError handleForbiddenException(final ForbiddenException e) {
