@@ -1,28 +1,42 @@
 package ru.practicum.entity.event;
 
 import lombok.experimental.UtilityClass;
+import ru.practicum.dto.category.CategoryDto;
 import ru.practicum.dto.event.EventFullDto;
 import ru.practicum.dto.event.NewEventDto;
 
-import ru.practicum.entity.category.Category;
 import ru.practicum.entity.category.CategoryMapper;
 import ru.practicum.entity.user.User;
 import ru.practicum.entity.user.UserMapper;
+import ru.practicum.exception.ValidationException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 @UtilityClass
 public class EventMapper {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public static Event mapToEntity(NewEventDto eventDto, Category categoryEntity, User user) {
+    public static Event mapToEntity(NewEventDto eventDto, CategoryDto categoryDto, User user) {
         Event entity = new Event();
 
         entity.setTitle(eventDto.getTitle());
         entity.setAnnotation(eventDto.getAnnotation());
-        entity.setCategory(categoryEntity);
+        entity.setCategory(CategoryMapper.toEntity(categoryDto));
+
+        LocalDateTime time;
+        try {
+            time = LocalDateTime.parse(eventDto.getEventDate(), FORMATTER);
+        } catch (DateTimeParseException e) {
+            throw new ValidationException("Invalid time format: " + eventDto.getEventDate());
+        }
+
+        if (time.isBefore(LocalDateTime.now())) {
+            throw new ValidationException("Event date should be in future, but has: " + time.format(FORMATTER));
+        }
+
         entity.setEventDate(LocalDateTime.parse(eventDto.getEventDate(), FORMATTER));
         entity.setDescription(eventDto.getDescription());
         entity.setParticipantLimit(eventDto.getParticipantLimit());

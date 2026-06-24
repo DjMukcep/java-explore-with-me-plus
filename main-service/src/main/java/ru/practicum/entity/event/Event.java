@@ -22,11 +22,11 @@ public class Event {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "initiator_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "initiator_id", nullable = false)
     private User initiator;
 
     @ManyToOne
-    @JoinColumn(name = "category_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
     @Column(nullable = false, length = 2000)
@@ -62,7 +62,7 @@ public class Event {
     private String description;
 
     @Column(name = "created_on", nullable = false)
-    private LocalDateTime createdOn = LocalDateTime.now();
+    private LocalDateTime createdOn;
 
     @Override
     public boolean equals(Object o) {

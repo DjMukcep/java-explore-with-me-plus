@@ -7,13 +7,13 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatClient;
 import ru.practicum.StatsRequest;
 import ru.practicum.ViewStats;
+import ru.practicum.dto.category.CategoryDto;
 import ru.practicum.dto.event.EventFullDto;
 import ru.practicum.dto.event.NewEventDto;
-import ru.practicum.entity.category.Category;
-import ru.practicum.entity.category.CategoryRepository;
+import ru.practicum.entity.category.CategoryService;
 import ru.practicum.entity.user.User;
-import ru.practicum.entity.user.UserRepository;
-import ru.practicum.exception.ConflictException;
+import ru.practicum.entity.user.UserService;
+import ru.practicum.exception.ConditionsNotMetException;
 import ru.practicum.exception.NotFoundException;
 
 import java.time.LocalDateTime;
@@ -28,40 +28,33 @@ public class EventServiceImpl implements EventService {
 
     private final StatClient statClient;
     private final EventRepository eventRepository;
-    private final CategoryRepository categoryRepository;
-    private final UserRepository userRepository;
+    private final CategoryService categoryService;
+    private final UserService userService;
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public EventFullDto create(Long userId, NewEventDto dto) {
 
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new NotFoundException(String.format("User with id '%d' not found", userId))
-        );
-
-        Category category = categoryRepository.findById(dto.getCategory()).orElseThrow(
-                () -> new NotFoundException(String.format("Category with id '%d' not found", dto.getCategory()))
-        );
+        User user = userService.findById(userId);
+        CategoryDto category = categoryService.findById(dto.getCategory());
 
         if (LocalDateTime.parse(dto.getEventDate(), FORMATTER).isBefore(LocalDateTime.now())) {
-            throw new ConflictException("eventDate must contain future date, but was " + dto.getEventDate());
+            throw new ConditionsNotMetException("eventDate must contain future date, but was " + dto.getEventDate());
         }
 
         Event event = EventMapper.mapToEntity(dto, category, user);
 
         event = eventRepository.save(event);
 
-        log.debug("event created {}", event);
+        log.info("event created {}", event);
 
         return EventMapper.mapToFullDto(event, user, 0);
     }
 
     @Override
     public EventFullDto getById(Long userId, Long eventId) {
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new NotFoundException(String.format("User with id '%d' not found", userId))
-        );
+        User user = userService.findById(userId);
 
         Event event = eventRepository.findById(eventId).orElseThrow(
                 () -> new NotFoundException(String.format("Event with id '%d' not found", eventId))

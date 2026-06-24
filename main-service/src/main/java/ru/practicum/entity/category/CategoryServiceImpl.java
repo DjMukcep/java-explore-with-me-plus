@@ -41,5 +41,10 @@ public class CategoryServiceImpl implements CategoryService {
         });
         return CategoryMapper.toDto(categoryRepository.save(CategoryMapper.updateToEntity(id, payload)));
     }
+
+    @Override
+    public CategoryDto findById(long id) {
+        return CategoryMapper.toDto(categoryRepository.findById(id).orElseThrow(() -> new NotFoundException("Категория с таким ID не существует!")));
+    }
 }
 

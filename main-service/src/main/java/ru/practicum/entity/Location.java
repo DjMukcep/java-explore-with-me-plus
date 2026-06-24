@@ -1,5 +1,6 @@
 package ru.practicum.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.Data;
 
@@ -7,6 +8,8 @@ import lombok.Data;
 @Data
 public class Location {
 
+    @Column(nullable = false)
     private Float lat;
+    @Column(nullable = false)
     private Float lon;
 }
