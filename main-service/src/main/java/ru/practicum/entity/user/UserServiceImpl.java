@@ -1,4 +1,64 @@
 package ru.practicum.entity.user;
 
-public class UserServiceImpl {
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.dto.user.NewUserRequest;
+import ru.practicum.dto.user.UserDto;
+import ru.practicum.dto.user.UserParamDto;
+import ru.practicum.exception.ConflictException;
+import ru.practicum.exception.NotFoundException;
+
+import java.util.List;
+
+@Slf4j
+@Service
+@Transactional(readOnly = true)
+@RequiredArgsConstructor()
+public class UserServiceImpl implements UserService {
+
+    private final UserRepository userRepository;
+
+    @Override
+    @Transactional
+    public UserDto saveUser(NewUserRequest userRequest) {
+        if (userRepository.existsByMail(userRequest.getEmail())) {
+            throw new ConflictException("User with this email already exists");
+        }
+
+        User savedUser = userRepository.save(UserMapper.toUser(userRequest));
+        log.info("Новый пользователь {}", savedUser);
+
+        return UserMapper.toUserDto(savedUser);
+    }
+
+    @Override
+    public List<UserDto> getUsers(UserParamDto userParamDto) {
+
+        if (userParamDto.getIds() != null && !userParamDto.getIds().isEmpty()) {
+            List<Long> ids = userParamDto.getIds().stream()
+                    .map(Integer::longValue)
+                    .toList();
+
+            return UserMapper.toUserDtos(userRepository.findAllByIdIn(ids));
+        }
+
+        int offset = userParamDto.getFrom() / userParamDto.getSize();
+        int pageSize = userParamDto.getSize();
+        List<User> users = userRepository.findAll(PageRequest.of(offset,pageSize)).getContent();
+
+        return UserMapper.toUserDtos(users);
+    }
+
+    @Override
+    @Transactional
+    public void deleteUserById(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("User with this id does not exist");
+        }
+
+        userRepository.deleteById(userId);
+    }
 }

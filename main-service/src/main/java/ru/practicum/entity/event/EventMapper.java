@@ -43,16 +43,18 @@ public class EventMapper {
         dto.setTitle(entity.getTitle());
         dto.setAnnotation(entity.getAnnotation());
         dto.setDescription(entity.getDescription());
-        dto.setCategory(CategoryMapper.mapToDto(entity.getCategory()));
+        dto.setCategory(CategoryMapper.toDto(entity.getCategory()));
         dto.setEventDate(entity.getEventDate().format(FORMATTER));
-        dto.setPublishedOn(entity.getPublishedOn().format(FORMATTER));
+        if (entity.getPublishedOn() != null) {
+            dto.setPublishedOn(entity.getPublishedOn().format(FORMATTER));
+        }
         dto.setCreatedOn(entity.getCreatedOn().format(FORMATTER));
         dto.setParticipantLimit(entity.getParticipantLimit());
         dto.setPaid(entity.getPaid());
-        dto.setInitiator(UserMapper.mapToShortDto(user));
+        dto.setInitiator(UserMapper.toShortDto(user));
         dto.setLocation(entity.getLocation());
         dto.setRequestModeration(entity.getRequestModeration());
-        dto.setState(entity.getState().toString());
+        dto.setState(entity.getState().name());
         dto.setViews(views);
 
         return dto;

@@ -1,6 +1,7 @@
 package ru.practicum.entity.event;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatClient;
@@ -12,6 +13,7 @@ import ru.practicum.entity.category.Category;
 import ru.practicum.entity.category.CategoryRepository;
 import ru.practicum.entity.user.User;
 import ru.practicum.entity.user.UserRepository;
+import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 
 import java.time.LocalDateTime;
@@ -19,6 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
+@Slf4j
 @Transactional
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
@@ -41,9 +44,15 @@ public class EventServiceImpl implements EventService {
                 () -> new NotFoundException(String.format("Category with id '%d' not found", dto.getCategory()))
         );
 
+        if (LocalDateTime.parse(dto.getEventDate(), FORMATTER).isBefore(LocalDateTime.now())) {
+            throw new ConflictException("eventDate must contain future date, but was " + dto.getEventDate());
+        }
+
         Event event = EventMapper.mapToEntity(dto, category, user);
 
         event = eventRepository.save(event);
+
+        log.debug("event created {}", event);
 
         return EventMapper.mapToFullDto(event, user, 0);
     }
