@@ -8,9 +8,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import ru.practicum.dto.NewUserRequest;
-import ru.practicum.dto.UserDto;
-import ru.practicum.dto.UserParamDto;
+import ru.practicum.dto.user.NewUserRequest;
+import ru.practicum.dto.user.UserDto;
+import ru.practicum.dto.user.UserParamDto;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 

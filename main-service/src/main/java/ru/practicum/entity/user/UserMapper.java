@@ -3,6 +3,7 @@ package ru.practicum.entity.user;
 import lombok.experimental.UtilityClass;
 import ru.practicum.dto.user.NewUserRequest;
 import ru.practicum.dto.user.UserDto;
+import ru.practicum.dto.user.UserShortDto;
 
 import java.util.List;
 
