@@ -8,6 +8,7 @@ import ru.practicum.dto.event.NewEventDto;
 import ru.practicum.entity.category.CategoryMapper;
 import ru.practicum.entity.user.User;
 import ru.practicum.entity.user.UserMapper;
+import ru.practicum.exception.ConditionsNotMetException;
 import ru.practicum.exception.ValidationException;
 
 import java.time.LocalDateTime;
@@ -33,8 +34,8 @@ public class EventMapper {
             throw new ValidationException("Invalid time format: " + eventDto.getEventDate());
         }
 
-        if (time.isBefore(LocalDateTime.now())) {
-            throw new ValidationException("eventDate must contain future date, but was: " + time.format(FORMATTER));
+        if (time.isBefore(LocalDateTime.now().plusHours(2))) {
+            throw new ConditionsNotMetException("eventDate must contain future date, but was: " + time.format(FORMATTER));
         }
 
         entity.setEventDate(LocalDateTime.parse(eventDto.getEventDate(), FORMATTER));
