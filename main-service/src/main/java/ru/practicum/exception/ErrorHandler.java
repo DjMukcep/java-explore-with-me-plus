@@ -20,6 +20,20 @@ public class ErrorHandler {
     private static final DateTimeFormatter formatter =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    @ExceptionHandler(NotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiError handleNotFoundException(final NotFoundException e) {
+        log.warn("Сущность не найдена: {}",e.getMessage());
+
+        return ApiError.builder()
+                .errors(null)
+                .message(e.getMessage())
+                .reason("Not Found!")
+                .status(HttpStatus.NOT_FOUND.name())
+                .timestamp(LocalDateTime.now().format(formatter))
+                .build();
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleMethodArgumentNotValidException(final MethodArgumentNotValidException e) {

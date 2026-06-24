@@ -6,7 +6,6 @@ import ru.practicum.dto.category.NewCategoryDto;
 
 @UtilityClass
 public class CategoryMapper {
-
     public static Category createToEntity(NewCategoryDto payload) {
         return Category.builder()
                 .name(payload.getName())
