@@ -1,12 +1,17 @@
 package ru.practicum.entity.category;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.dto.category.CategoriesParamDto;
 import ru.practicum.dto.category.CategoryDto;
 import ru.practicum.dto.category.NewCategoryDto;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -41,5 +46,15 @@ public class CategoryServiceImpl implements CategoryService {
         });
         return CategoryMapper.toDto(categoryRepository.save(CategoryMapper.updateToEntity(id, payload)));
     }
-}
 
+    @Override
+    public List<CategoryDto> findAll(CategoriesParamDto params) {
+        Pageable page = PageRequest.of(params.getFrom() / params.getSize(), params.getSize());
+        return categoryRepository.findAll(page).stream().map(CategoryMapper::toDto).toList();
+    }
+
+    @Override
+    public CategoryDto findById(long id) {
+        return CategoryMapper.toDto(categoryRepository.findById(id).orElseThrow(() -> new NotFoundException("Категория с таким ID не существует!")));
+    }
+}

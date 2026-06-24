@@ -16,4 +16,3 @@ public class NewCategoryDto {
     @Length(min = 1, max = 50, message = "Длина имени должна быть от 1 до 50 символов!")
     private String name;
 }
-
