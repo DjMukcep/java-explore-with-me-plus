@@ -25,7 +25,6 @@ public class CategoryAdminController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CategoryDto create(@Valid @RequestBody NewCategoryDto payload) {
-        log.info("Handling category create: {}", payload);
         CategoryDto response = categoryService.create(payload);
         log.info("Created category: {}", response);
         return response;
@@ -34,7 +33,6 @@ public class CategoryAdminController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable long id) {
-        log.info("Handling category delete with ID = {}", id);
         categoryService.delete(id);
         log.info("Deleted category with ID = {}", id);
     }
@@ -42,7 +40,6 @@ public class CategoryAdminController {
     @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public CategoryDto update(@PathVariable long id, @Valid @RequestBody CategoryDto payload) {
-        log.info("Handling category update: ID = {}, payload = {}", id, payload);
         CategoryDto response = categoryService.update(id, payload);
         log.info("Updated category with ID = {}, payload = {}", id, payload);
         return response;

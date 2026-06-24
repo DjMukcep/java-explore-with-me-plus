@@ -12,7 +12,7 @@ import org.hibernate.validator.constraints.Length;
 @AllArgsConstructor
 @Builder
 public class NewCategoryDto {
-    @NotBlank
-    @Length(min = 1, max = 50)
+    @NotBlank(message = "Имя не может быть пустым!")
+    @Length(min = 1, max = 50, message = "Длина имени должна быть от 1 до 50 символов!")
     private String name;
 }
