@@ -24,9 +24,6 @@ public class EventAdminParamDto {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime rangeEnd;
 
-    @Builder.Default
     private int from = 0;
-
-    @Builder.Default
     private int size = 10;
 }

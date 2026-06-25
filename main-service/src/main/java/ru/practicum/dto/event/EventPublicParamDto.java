@@ -30,16 +30,13 @@ public class EventPublicParamDto {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime rangeEnd;
 
-    @Builder.Default
     private boolean onlyAvailable = false;
 
-    private String sort; // EVENT_DATE, VIEWS
+    private String sort;
 
     @PositiveOrZero(message = "can't be negative")
-    @Builder.Default
     private int from = 0;
 
     @Positive(message = "must be greater than 0")
-    @Builder.Default
     private int size = 10;
 }

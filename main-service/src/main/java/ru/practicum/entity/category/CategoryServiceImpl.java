@@ -57,10 +57,4 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryDto findById(long id) {
         return CategoryMapper.toDto(categoryRepository.findById(id).orElseThrow(() -> new NotFoundException("Категория с таким ID не существует!")));
     }
-
-    @Override
-    public Category findEntityById(long id) {
-        return categoryRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Категория с таким ID не существует!"));
-    }
 }

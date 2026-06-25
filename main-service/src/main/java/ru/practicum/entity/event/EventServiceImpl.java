@@ -15,8 +15,10 @@ import ru.practicum.EndpointHit;
 import ru.practicum.StatClient;
 import ru.practicum.StatsRequest;
 import ru.practicum.ViewStats;
+import ru.practicum.dto.category.CategoryDto;
 import ru.practicum.dto.event.*;
 import ru.practicum.entity.category.Category;
+import ru.practicum.entity.category.CategoryMapper;
 import ru.practicum.entity.category.CategoryService;
 import ru.practicum.entity.user.User;
 import ru.practicum.entity.user.UserService;
@@ -49,7 +51,8 @@ public class EventServiceImpl implements EventService {
     @Transactional
     public EventFullDto create(Long userId, NewEventDto dto) {
         User user = userService.findById(userId);
-        Category category = categoryService.findEntityById(dto.getCategory());
+        CategoryDto categoryDto = categoryService.findById(dto.getCategory());
+        Category category = CategoryMapper.toEntity(categoryDto);
 
         Event event = EventMapper.mapToEntity(dto, category, user);
         event = eventRepository.save(event);
@@ -80,9 +83,11 @@ public class EventServiceImpl implements EventService {
         Pageable pageable = PageRequest.of(params.getFrom() / params.getSize(), params.getSize());
         Predicate predicate = buildAdminPredicate(params);
 
-        Iterable<Event> eventsIterable = eventRepository.findAll(predicate, pageable);
-        List<Event> events = new ArrayList<>();
-        eventsIterable.forEach(events::add);
+        List<Event> events = ((Page<Event>) eventRepository.findAll(predicate, pageable)).getContent();
+
+        if (events.isEmpty()) {
+            return Collections.emptyList();
+        }
 
         Map<Long, Long> viewsMap = getViewsMap(events);
 
@@ -91,7 +96,7 @@ public class EventServiceImpl implements EventService {
                     Long views = viewsMap.getOrDefault(event.getId(), 0L);
                     return EventMapper.toEventFullDto(event, 0L, views);
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -100,14 +105,14 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
 
-        applyStateAction(event, request.getStateAction());
-
         Category category = null;
         if (request.getCategory() != null) {
-            category = categoryService.findEntityById(request.getCategory());
+            CategoryDto categoryDto = categoryService.findById(request.getCategory());
+            category = CategoryMapper.toEntity(categoryDto);
         }
         EventMapper.updateEventFromAdminRequest(request, event, category);
-        eventRepository.save(event);
+
+        applyStateAction(event, request.getStateAction());
 
         Map<Long, Long> viewsMap = getViewsMap(Collections.singletonList(event));
         Long views = viewsMap.getOrDefault(event.getId(), 0L);
@@ -118,16 +123,18 @@ public class EventServiceImpl implements EventService {
     private void applyStateAction(Event event, String stateAction) {
         if (stateAction == null) return;
 
+        LocalDateTime now = LocalDateTime.now();
+
         switch (stateAction) {
             case "PUBLISH_EVENT":
                 if (event.getState() != EventState.PENDING) {
                     throw new ConflictException("Cannot publish the event because it's not in the right state: " + event.getState());
                 }
-                if (event.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
+                if (event.getEventDate().isBefore(now.plusHours(1))) {
                     throw new ConflictException("Cannot publish the event because event date is less than 1 hour from now.");
                 }
                 event.setState(EventState.PUBLISHED);
-                event.setPublishedOn(LocalDateTime.now());
+                event.setPublishedOn(now);
                 break;
             case "REJECT_EVENT":
                 if (event.getState() == EventState.PUBLISHED) {
@@ -151,8 +158,13 @@ public class EventServiceImpl implements EventService {
         Pageable pageable = buildPageable(params.getSort(), params.getFrom(), params.getSize());
         Predicate predicate = buildPublicPredicate(params, rangeStart);
 
-        Page<Event> eventsPage = eventRepository.findAll(predicate, pageable);
-        List<Event> events = eventsPage.getContent();
+        List<Event> events = ((Page<Event>) eventRepository.findAll(predicate, pageable)).getContent();
+
+        if (events.isEmpty()) {
+            sendHit(request);
+            return Collections.emptyList();
+        }
+
         Map<Long, Long> viewsMap = getViewsMap(events);
 
         List<EventShortDto> result = events.stream()
@@ -160,7 +172,7 @@ public class EventServiceImpl implements EventService {
                     Long views = viewsMap.getOrDefault(event.getId(), 0L);
                     return EventMapper.toEventShortDto(event, 0L, views);
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         if (params.isOnlyAvailable()) {
             result = filterAvailable(result);
@@ -179,10 +191,11 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findByIdAndState(id, EventState.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
 
+        sendHit(request);
+
         Map<Long, Long> viewsMap = getViewsMap(Collections.singletonList(event));
         Long views = viewsMap.getOrDefault(event.getId(), 0L);
 
-        sendHit(request);
         return EventMapper.toEventFullDto(event, 0L, views);
     }
 
@@ -197,7 +210,8 @@ public class EventServiceImpl implements EventService {
         }
         if (params.getStates() != null && !params.getStates().isEmpty()) {
             builder.and(event.state.in(params.getStates().stream()
-                    .map(EventState::valueOf).toList()));
+                    .map(stateStr -> EventState.valueOf(stateStr.toUpperCase()))
+                    .toList()));
         }
         if (params.getCategories() != null && !params.getCategories().isEmpty()) {
             builder.and(event.category.id.in(params.getCategories()));
@@ -218,9 +232,10 @@ public class EventServiceImpl implements EventService {
         builder.and(event.state.eq(EventState.PUBLISHED));
 
         if (params.getText() != null && !params.getText().isBlank()) {
-            String text = params.getText().toLowerCase();
-            builder.and(event.annotation.lower().like("%" + text + "%")
-                    .or(event.description.lower().like("%" + text + "%")));
+            String text = params.getText();
+            builder.and(new BooleanBuilder()
+                    .or(event.annotation.containsIgnoreCase(text))
+                    .or(event.description.containsIgnoreCase(text)));
         }
         if (params.getCategories() != null && !params.getCategories().isEmpty()) {
             builder.and(event.category.id.in(params.getCategories()));
@@ -276,7 +291,7 @@ public class EventServiceImpl implements EventService {
 
         List<String> uris = events.stream()
                 .map(event -> "/events/" + event.getId())
-                .collect(Collectors.toList());
+                .toList();
 
         List<ViewStats> stats = statClient.getViewStats(new StatsRequest(
                 start.format(FORMATTER),

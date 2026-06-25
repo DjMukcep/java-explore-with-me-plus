@@ -17,6 +17,5 @@ public interface CategoryService {
 
     CategoryDto findById(long id);
 
-    Category findEntityById(long id);
 }
 

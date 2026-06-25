@@ -2,7 +2,9 @@ package ru.practicum.controller.public_api;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.event.EventFullDto;
 import ru.practicum.dto.event.EventPublicParamDto;
@@ -14,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/events")
 @RequiredArgsConstructor
+@Validated
 public class EventPublicController {
 
     private final EventService eventService;
@@ -25,7 +28,7 @@ public class EventPublicController {
     }
 
     @GetMapping("/{id}")
-    public EventFullDto getEventById(@PathVariable Long id,
+    public EventFullDto getEventById(@PathVariable @Positive Long id,
                                      HttpServletRequest request) {
         return eventService.getPublishedEventById(id, request);
     }
