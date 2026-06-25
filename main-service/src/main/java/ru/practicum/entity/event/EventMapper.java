@@ -3,6 +3,7 @@ package ru.practicum.entity.event;
 import lombok.experimental.UtilityClass;
 import ru.practicum.dto.category.CategoryDto;
 import ru.practicum.dto.event.EventFullDto;
+import ru.practicum.dto.event.EventShortDto;
 import ru.practicum.dto.event.NewEventDto;
 
 import ru.practicum.entity.category.CategoryMapper;
@@ -68,6 +69,23 @@ public class EventMapper {
         dto.setPaid(entity.getPaid());
         dto.setInitiator(UserMapper.toShortDto(user));
         dto.setLocation(entity.getLocation());
+        dto.setRequestModeration(entity.getRequestModeration());
+        dto.setState(entity.getState().name());
+        dto.setViews(views);
+
+        return dto;
+    }
+
+    public static EventShortDto mapToShortDto(Event entity, User user, long views) {
+        EventShortDto dto = new EventShortDto();
+
+        dto.setId(entity.getId());
+        dto.setTitle(entity.getTitle());
+        dto.setAnnotation(entity.getAnnotation());
+        dto.setCategory(CategoryMapper.toDto(entity.getCategory()));
+        dto.setEventDate(entity.getEventDate().format(FORMATTER));
+        dto.setPaid(entity.getPaid());
+        dto.setInitiator(UserMapper.toShortDto(user));
         dto.setRequestModeration(entity.getRequestModeration());
         dto.setState(entity.getState().name());
         dto.setViews(views);
