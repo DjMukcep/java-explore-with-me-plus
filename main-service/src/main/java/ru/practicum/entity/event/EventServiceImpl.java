@@ -1,5 +1,7 @@
 package ru.practicum.entity.event;
 
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Predicate;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,10 +15,8 @@ import ru.practicum.EndpointHit;
 import ru.practicum.StatClient;
 import ru.practicum.StatsRequest;
 import ru.practicum.ViewStats;
-import ru.practicum.dto.category.CategoryDto;
 import ru.practicum.dto.event.*;
 import ru.practicum.entity.category.Category;
-import ru.practicum.entity.category.CategoryRepository;
 import ru.practicum.entity.category.CategoryService;
 import ru.practicum.entity.user.User;
 import ru.practicum.entity.user.UserService;
@@ -26,10 +26,7 @@ import ru.practicum.exception.ValidationException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,21 +38,18 @@ public class EventServiceImpl implements EventService {
     private final StatClient statClient;
     private final EventRepository eventRepository;
     private final CategoryService categoryService;
-    private final CategoryRepository categoryRepository;
     private final UserService userService;
 
     private static final String APP_NAME = "ewm-main-service";
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    // ---------- Private (коллега) ----------
+    // ---------- Private ----------
 
     @Override
     @Transactional
     public EventFullDto create(Long userId, NewEventDto dto) {
         User user = userService.findById(userId);
-        CategoryDto categoryDto = categoryService.findById(dto.getCategory());
-        Category category = categoryRepository.findById(categoryDto.getId())
-                .orElseThrow(() -> new NotFoundException("Category not found"));
+        Category category = categoryService.findEntityById(dto.getCategory());
 
         Event event = EventMapper.mapToEntity(dto, category, user);
         event = eventRepository.save(event);
@@ -67,7 +61,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventFullDto getById(Long userId, Long eventId) {
-        User user = userService.findById(userId);
+        userService.findById(userId);
 
         Event event = eventRepository.findById(eventId).orElseThrow(
                 () -> new NotFoundException(String.format("Event with id '%d' not found", eventId))
@@ -79,22 +73,16 @@ public class EventServiceImpl implements EventService {
         return EventMapper.toEventFullDto(event, 0L, views);
     }
 
-    // ---------- Admin (наши) ----------
+    // ---------- Admin ----------
 
     @Override
     public List<EventFullDto> getEventsByAdmin(EventAdminParamDto params) {
         Pageable pageable = PageRequest.of(params.getFrom() / params.getSize(), params.getSize());
+        Predicate predicate = buildAdminPredicate(params);
 
-        List<EventState> states = null;
-        if (params.getStates() != null && !params.getStates().isEmpty()) {
-            states = params.getStates().stream()
-                    .map(EventState::valueOf)
-                    .collect(Collectors.toList());
-        }
-
-        List<Event> events = eventRepository.findEventsByAdmin(
-                params.getUsers(), states, params.getCategories(),
-                params.getRangeStart(), params.getRangeEnd(), pageable);
+        Iterable<Event> eventsIterable = eventRepository.findAll(predicate, pageable);
+        List<Event> events = new ArrayList<>();
+        eventsIterable.forEach(events::add);
 
         Map<Long, Long> viewsMap = getViewsMap(events);
 
@@ -116,8 +104,7 @@ public class EventServiceImpl implements EventService {
 
         Category category = null;
         if (request.getCategory() != null) {
-            category = categoryRepository.findById(request.getCategory())
-                    .orElseThrow(() -> new NotFoundException("Category with id=" + request.getCategory() + " was not found"));
+            category = categoryService.findEntityById(request.getCategory());
         }
         EventMapper.updateEventFromAdminRequest(request, event, category);
         eventRepository.save(event);
@@ -153,7 +140,7 @@ public class EventServiceImpl implements EventService {
         }
     }
 
-    // ---------- Public (наши) ----------
+    // ---------- Public ----------
 
     @Override
     public List<EventShortDto> getPublishedEvents(EventPublicParamDto params, HttpServletRequest request) {
@@ -162,11 +149,9 @@ public class EventServiceImpl implements EventService {
         LocalDateTime rangeStart = params.getRangeStart() != null ? params.getRangeStart() : LocalDateTime.now();
 
         Pageable pageable = buildPageable(params.getSort(), params.getFrom(), params.getSize());
+        Predicate predicate = buildPublicPredicate(params, rangeStart);
 
-        Page<Event> eventsPage = eventRepository.findPublishedEvents(
-                params.getText(), params.getCategories(), params.getPaid(),
-                rangeStart, params.getRangeEnd(), pageable);
-
+        Page<Event> eventsPage = eventRepository.findAll(predicate, pageable);
         List<Event> events = eventsPage.getContent();
         Map<Long, Long> viewsMap = getViewsMap(events);
 
@@ -199,6 +184,57 @@ public class EventServiceImpl implements EventService {
 
         sendHit(request);
         return EventMapper.toEventFullDto(event, 0L, views);
+    }
+
+    // ---------- QueryDSL predicates ----------
+
+    private Predicate buildAdminPredicate(EventAdminParamDto params) {
+        QEvent event = QEvent.event;
+        BooleanBuilder builder = new BooleanBuilder();
+
+        if (params.getUsers() != null && !params.getUsers().isEmpty()) {
+            builder.and(event.initiator.id.in(params.getUsers()));
+        }
+        if (params.getStates() != null && !params.getStates().isEmpty()) {
+            builder.and(event.state.in(params.getStates().stream()
+                    .map(EventState::valueOf).toList()));
+        }
+        if (params.getCategories() != null && !params.getCategories().isEmpty()) {
+            builder.and(event.category.id.in(params.getCategories()));
+        }
+        if (params.getRangeStart() != null) {
+            builder.and(event.eventDate.goe(params.getRangeStart()));
+        }
+        if (params.getRangeEnd() != null) {
+            builder.and(event.eventDate.loe(params.getRangeEnd()));
+        }
+        return builder.getValue();
+    }
+
+    private Predicate buildPublicPredicate(EventPublicParamDto params, LocalDateTime rangeStart) {
+        QEvent event = QEvent.event;
+        BooleanBuilder builder = new BooleanBuilder();
+
+        builder.and(event.state.eq(EventState.PUBLISHED));
+
+        if (params.getText() != null && !params.getText().isBlank()) {
+            String text = params.getText().toLowerCase();
+            builder.and(event.annotation.lower().like("%" + text + "%")
+                    .or(event.description.lower().like("%" + text + "%")));
+        }
+        if (params.getCategories() != null && !params.getCategories().isEmpty()) {
+            builder.and(event.category.id.in(params.getCategories()));
+        }
+        if (params.getPaid() != null) {
+            builder.and(event.paid.eq(params.getPaid()));
+        }
+        if (rangeStart != null) {
+            builder.and(event.eventDate.goe(rangeStart));
+        }
+        if (params.getRangeEnd() != null) {
+            builder.and(event.eventDate.loe(params.getRangeEnd()));
+        }
+        return builder.getValue();
     }
 
     // ---------- Private helpers ----------
@@ -234,7 +270,7 @@ public class EventServiceImpl implements EventService {
 
         LocalDateTime start = events.stream()
                 .map(Event::getCreatedOn)
-                .filter(createdOn -> createdOn != null)
+                .filter(Objects::nonNull)
                 .min(LocalDateTime::compareTo)
                 .orElse(LocalDateTime.now().minusYears(1));
 
