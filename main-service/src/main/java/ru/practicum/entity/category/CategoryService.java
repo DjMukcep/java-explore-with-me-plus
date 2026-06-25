@@ -16,5 +16,6 @@ public interface CategoryService {
     List<CategoryDto> findAll(CategoriesParamDto params);
 
     CategoryDto findById(long id);
+
 }
 

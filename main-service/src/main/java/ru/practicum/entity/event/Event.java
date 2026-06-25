@@ -22,22 +22,27 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "initiator_id", nullable = false)
     private User initiator;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
     @Column(nullable = false, length = 2000)
     private String annotation;
 
+    @Column(length = 7000)
+    private String description;
+
     @Column(name = "event_date", nullable = false)
     private LocalDateTime eventDate;
 
+    @Column(name = "created_on", nullable = false)
+    private LocalDateTime createdOn;
+
     @Embedded
-    @Column(nullable = false)
     private Location location;
 
     @Column(nullable = false)
@@ -53,17 +58,11 @@ public class Event {
     private Boolean requestModeration;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 25)
     private EventState state;
 
     @Column(nullable = false, length = 120)
     private String title;
-
-    @Column(length = 7000)
-    private String description;
-
-    @Column(name = "created_on", nullable = false)
-    private LocalDateTime createdOn;
 
     @Override
     public boolean equals(Object o) {
