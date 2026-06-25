@@ -55,10 +55,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteUserById(Long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("User with this id does not exist");
-        }
-
+        checkUserExist(userId);
         userRepository.deleteById(userId);
     }
 
@@ -66,5 +63,12 @@ public class UserServiceImpl implements UserService {
     public User findById(Long userId) {
         return userRepository.findById(userId).orElseThrow(
                 () -> new NotFoundException("User with this id does not exist"));
+    }
+
+    @Override
+    public void checkUserExist(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("User with this id does not exist");
+        }
     }
 }
