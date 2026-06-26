@@ -1,6 +1,5 @@
 package ru.practicum.entity.event;
 
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,8 +31,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 @Service
 @Slf4j

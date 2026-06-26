@@ -8,9 +8,7 @@ import ru.practicum.dto.event.EventShortDto;
 import ru.practicum.dto.event.NewEventDto;
 import ru.practicum.dto.event.UpdateEventAdminRequest;
 import ru.practicum.entity.category.Category;
-import ru.practicum.entity.category.CategoryMapper;
 import ru.practicum.entity.user.User;
-import ru.practicum.entity.user.UserMapper;
 import ru.practicum.exception.ConditionsNotMetException;
 import ru.practicum.exception.ValidationException;
 

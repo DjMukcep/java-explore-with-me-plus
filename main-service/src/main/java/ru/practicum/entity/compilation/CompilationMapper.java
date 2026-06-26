@@ -7,8 +7,6 @@ import ru.practicum.dto.event.EventShortDto;
 import ru.practicum.entity.event.Event;
 import ru.practicum.entity.event.EventMapper;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;

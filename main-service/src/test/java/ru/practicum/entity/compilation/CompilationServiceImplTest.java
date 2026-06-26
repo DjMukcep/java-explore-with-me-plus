@@ -278,8 +278,8 @@ class CompilationServiceImplTest {
         compilation1.setPinned(request.getPinned());
         compilation1.setEvents(Set.of(event));
 
-        when(compilationRepository.findById(COMP_ID_1)).
-                thenReturn(Optional.of(compilation1));
+        when(compilationRepository.findById(COMP_ID_1))
+                .thenReturn(Optional.of(compilation1));
 
         List<ViewStats> viewStats = prepareViewStatsForEvents(new ArrayList<>(request.getEvents()));
         when(statClient.getViewStats(any())).thenReturn(viewStats);
