@@ -95,23 +95,6 @@ public class EventMapper {
         return dto;
     }
 
-    public static EventShortDto mapToShortDto(Event entity, User user, long views) {
-        EventShortDto dto = new EventShortDto();
-
-        dto.setId(entity.getId());
-        dto.setTitle(entity.getTitle());
-        dto.setAnnotation(entity.getAnnotation());
-        dto.setCategory(CategoryMapper.toDto(entity.getCategory()));
-        dto.setEventDate(entity.getEventDate().format(FORMATTER));
-        dto.setPaid(entity.getPaid());
-        dto.setInitiator(UserMapper.toShortDto(user));
-        dto.setRequestModeration(entity.getRequestModeration());
-        dto.setState(entity.getState().name());
-        dto.setViews(views);
-
-        return dto;
-    }
-
     public static void updateEventFromAdminRequest(UpdateEventAdminRequest request, Event event, Category category) {
         if (request.getAnnotation() != null) {
             event.setAnnotation(request.getAnnotation());

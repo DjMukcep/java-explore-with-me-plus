@@ -7,6 +7,7 @@ import ru.practicum.dto.event.EventShortDto;
 import ru.practicum.entity.event.Event;
 import ru.practicum.entity.event.EventMapper;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,10 +24,12 @@ public class CompilationMapper {
         dto.setPinned(entity.getPinned());
 
         Set<EventShortDto> events = entity.getEvents().stream()
-                .map(event -> EventMapper.mapToShortDto(
-                        event, event.getInitiator(), eventHits.getOrDefault(event.getId(), 0L))
+                //TODO: confirmedRequests API call
+                .map(event -> EventMapper.toEventShortDto(
+                        event, 0L, eventHits.getOrDefault(event.getId(), 0L))
                 )
                 .collect(Collectors.toSet());
+
 
         dto.setEvents(events);
         return dto;

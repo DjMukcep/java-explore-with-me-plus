@@ -142,9 +142,9 @@ class CompilationMapperTest {
     @Test
     void toDto_shouldMapEntityToDtoWithCorrectHits() {
         try (MockedStatic<EventMapper> mocked = mockStatic(EventMapper.class)) {
-            mocked.when(() -> EventMapper.mapToShortDto(eq(event1), same(initiator), eq(10L)))
+            mocked.when(() -> EventMapper.toEventShortDto(eq(event1), anyLong(), eq(10L)))
                     .thenReturn(shortDto1);
-            mocked.when(() -> EventMapper.mapToShortDto(eq(event2), same(initiator), eq(5L)))
+            mocked.when(() -> EventMapper.toEventShortDto(eq(event2), anyLong(), eq(5L)))
                             .thenReturn(shortDto2);
 
             CompilationDto result = CompilationMapper.toDto(compilation, eventHits);
@@ -155,8 +155,8 @@ class CompilationMapperTest {
             assertThat(result.getEvents(), hasSize(2));
             assertThat(result.getEvents(), hasItems(shortDto1, shortDto2));
 
-            mocked.verify(() -> EventMapper.mapToShortDto(eq(event1), same(initiator), eq(10L)));
-            mocked.verify(() -> EventMapper.mapToShortDto(eq(event2), same(initiator), eq(5L)));
+            mocked.verify(() -> EventMapper.toEventShortDto(eq(event1), anyLong(), eq(10L)));
+            mocked.verify(() -> EventMapper.toEventShortDto(eq(event2), anyLong(), eq(5L)));
         }
     }
 

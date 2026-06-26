@@ -6,6 +6,7 @@ import ru.practicum.entity.event.Event;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "compilations")
@@ -13,7 +14,6 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 @Builder
 public class Compilation {
 
@@ -47,5 +47,17 @@ public class Compilation {
     @Override
     public int hashCode() {
         return getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "Compilation{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", pinned=" + pinned +
+                ", events=" + events.stream()
+                .map(event -> String.format("{id: %d, title: %s}", event.getId(), event.getTitle()))
+                .collect(Collectors.toSet()) +
+                '}';
     }
 }
