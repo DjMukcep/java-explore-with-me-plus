@@ -12,9 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class Location {
 
     @Column(nullable = false)

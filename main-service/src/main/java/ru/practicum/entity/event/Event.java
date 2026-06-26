@@ -12,9 +12,6 @@ import java.time.LocalDateTime;
 @Table(name = "events")
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor

@@ -22,6 +22,6 @@ public class EventShortDto {
     private UserShortDto initiator;
     private Boolean requestModeration;
     private String state;
-    //private Long confirmedRequests;
+    private Long confirmedRequests;
     private Long views;
 }

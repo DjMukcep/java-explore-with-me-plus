@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.dto.Location;
-import ru.practicum.dto.UserShortDto;
+import ru.practicum.dto.user.UserShortDto;
 import ru.practicum.dto.category.CategoryDto;
 
 @Data
@@ -27,7 +27,6 @@ public class EventFullDto {
     private UserShortDto initiator;
     private Location location;
     private Boolean requestModeration;
-    //private Long confirmedRequests;
     private String state;
     private Long views;
     private Long confirmedRequests;

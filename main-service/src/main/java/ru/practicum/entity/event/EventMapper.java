@@ -1,14 +1,16 @@
 package ru.practicum.entity.event;
 
 import lombok.experimental.UtilityClass;
-import ru.practicum.dto.UserShortDto;
+import ru.practicum.dto.user.UserShortDto;
 import ru.practicum.dto.category.CategoryDto;
 import ru.practicum.dto.event.EventFullDto;
 import ru.practicum.dto.event.EventShortDto;
 import ru.practicum.dto.event.NewEventDto;
 import ru.practicum.dto.event.UpdateEventAdminRequest;
 import ru.practicum.entity.category.Category;
+import ru.practicum.entity.category.CategoryMapper;
 import ru.practicum.entity.user.User;
+import ru.practicum.entity.user.UserMapper;
 import ru.practicum.exception.ConditionsNotMetException;
 import ru.practicum.exception.ValidationException;
 
@@ -109,7 +111,7 @@ public class EventMapper {
 
         return dto;
     }
-}
+
     public static void updateEventFromAdminRequest(UpdateEventAdminRequest request, Event event, Category category) {
         if (request.getAnnotation() != null) {
             event.setAnnotation(request.getAnnotation());
