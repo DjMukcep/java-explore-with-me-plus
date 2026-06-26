@@ -12,10 +12,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Location {
 
     @Column(nullable = false)
     private Float lat;
+
     @Column(nullable = false)
     private Float lon;
 }

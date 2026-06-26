@@ -16,7 +16,9 @@ CREATE TABLE IF NOT EXISTS events (
     initiator_id BIGINT NOT NULL,
     category_id BIGINT NOT NULL,
     annotation VARCHAR(2000) NOT NULL,
+    description VARCHAR(7000),
     event_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    created_on TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     lat REAL NOT NULL,
     lon REAL NOT NULL,
     paid BOOLEAN NOT NULL,
@@ -25,8 +27,6 @@ CREATE TABLE IF NOT EXISTS events (
     request_moderation BOOLEAN NOT NULL,
     state VARCHAR(25) NOT NULL,
     title VARCHAR(120) NOT NULL,
-    created_on TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    description VARCHAR(7000),
     CONSTRAINT fk_event_initiator FOREIGN KEY(initiator_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_event_category FOREIGN KEY(category_id) REFERENCES categories(id) ON DELETE CASCADE
 );
