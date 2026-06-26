@@ -1,9 +1,7 @@
 package ru.practicum.entity.event;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import ru.practicum.entity.Location;
 import ru.practicum.entity.category.Category;
 import ru.practicum.entity.user.User;
@@ -14,6 +12,9 @@ import java.time.LocalDateTime;
 @Table(name = "events")
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @ToString
 public class Event {
 

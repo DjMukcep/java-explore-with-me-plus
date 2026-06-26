@@ -23,7 +23,9 @@ public class CompilationMapper {
         dto.setPinned(entity.getPinned());
 
         Set<EventShortDto> events = entity.getEvents().stream()
-                .map(event -> EventMapper.mapToShortDto(event, event.getInitiator(), eventHits.getOrDefault(event.getId(), 0L)))
+                .map(event -> EventMapper.mapToShortDto(
+                        event, event.getInitiator(), eventHits.getOrDefault(event.getId(), 0L))
+                )
                 .collect(Collectors.toSet());
 
         dto.setEvents(events);

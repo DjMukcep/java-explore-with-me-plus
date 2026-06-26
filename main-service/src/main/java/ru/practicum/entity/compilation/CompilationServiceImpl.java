@@ -16,6 +16,7 @@ import ru.practicum.entity.compilation.QCompilation;
 import ru.practicum.entity.event.Event;
 import ru.practicum.entity.event.EventService;
 import ru.practicum.exception.NotFoundException;
+import ru.practicum.exception.ValidationException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -139,17 +140,30 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     private void updateFields(Compilation old, UpdateCompilationRequest request) {
-        if (request.getTitle() != null && old.getTitle().equals(request.getTitle())) {
-            old.setTitle(request.getTitle());
+
+        if (request.getTitle() != null) {
+            if (request.getTitle().isBlank()) {
+                throw new ValidationException("Title can't be empty!");
+            }
+
+            if (request.getTitle().length() > 50) {
+                throw new ValidationException("Title length should be <50");
+            }
+
+            if (!old.getTitle().equals(request.getTitle())) {
+                old.setTitle(request.getTitle());
+            }
         }
 
         if (request.getPinned() != null && !old.getPinned().equals(request.getPinned())) {
             old.setPinned(request.getPinned());
         }
 
-        Set<Long> oldIds = old.getEvents().stream().map(Event::getId).collect(Collectors.toUnmodifiableSet());
+        Set<Long> oldIds = old.getEvents().stream()
+                .map(Event::getId)
+                .collect(Collectors.toUnmodifiableSet());
 
-        if (request.getEvents() != null && oldIds.equals(request.getEvents())) {
+        if (request.getEvents() != null && !oldIds.equals(request.getEvents())) {
             List<Event> newEvents = eventService.getByIds(request.getEvents());
             old.setEvents(new HashSet<>(newEvents));
         }
