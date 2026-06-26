@@ -104,7 +104,11 @@ public class CompilationServiceImpl implements CompilationService {
         compilationRepository.save(compilation);
         log.info("updated compilation: {}", compilation);
 
-        List<ViewStats> viewStats = makeRequestToStatsService(request.getEvents());
+        List<Long> ids = compilation.getEvents().stream()
+                .map(Event::getId)
+                .toList();
+
+        List<ViewStats> viewStats = makeRequestToStatsService(ids);
         return CompilationMapper.toDto(compilation, getHitsByEventIds(viewStats));
     }
 
