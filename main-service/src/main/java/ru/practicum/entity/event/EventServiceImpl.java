@@ -389,7 +389,7 @@ public class EventServiceImpl implements EventService {
                 .app(APP_NAME)
                 .uri(request.getRequestURI())
                 .ip(request.getRemoteAddr())
-                .timestamp(LocalDateTime.now().format(FORMATTER))
+                .timestamp(LocalDateTime.now())
                 .build());
     }
 
