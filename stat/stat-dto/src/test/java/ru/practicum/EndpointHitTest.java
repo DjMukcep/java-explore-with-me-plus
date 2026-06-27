@@ -9,6 +9,8 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
+
+import java.time.LocalDateTime;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -34,12 +36,12 @@ class EndpointHitTest {
                 .app("testApp")
                 .uri("/test/uri")
                 .ip("192.168.0.1")
-                .timestamp("2026-01-01 10:20:30")
+                .timestamp(LocalDateTime.of(2026,1,1,10,20,30))
                 .build();
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"app", "uri", "ip", "timestamp"})
+    @ValueSource(strings = {"app", "uri", "ip"})
     void whenFieldIsBlank_thenViolation(String field) {
         setField(field, " ");
 
@@ -80,7 +82,6 @@ class EndpointHitTest {
             case "app" -> endpointHit.setApp(value);
             case "uri" -> endpointHit.setUri(value);
             case "ip" -> endpointHit.setIp(value);
-            case "timestamp" -> endpointHit.setTimestamp(value);
         }
     }
 }

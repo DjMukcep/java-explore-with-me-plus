@@ -11,6 +11,7 @@ import ru.practicum.EndpointHit;
 import ru.practicum.ParamDto;
 import ru.practicum.service.StatService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -40,7 +41,7 @@ class StatControllerTest {
                 .app("app")
                 .uri("/test")
                 .ip("127.0.0.1")
-                .timestamp("2026-01-01 10:00:00")
+                .timestamp(LocalDateTime.of(2026,1,1,10,0,0))
                 .build();
 
         mockMvc.perform(post("/hit")
@@ -58,7 +59,7 @@ class StatControllerTest {
                 .app("") // invalid
                 .uri("/test")
                 .ip("127.0.0.1")
-                .timestamp("2026-01-01 10:00:00")
+                .timestamp(LocalDateTime.of(2026,1,1,10,0,0))
                 .build();
 
         mockMvc.perform(post("/hit")

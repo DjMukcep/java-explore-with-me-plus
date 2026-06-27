@@ -46,7 +46,7 @@ class StatServiceImplTest {
                 .app("app")
                 .uri("/test")
                 .ip("127.0.0.1")
-                .timestamp("2026-01-01 10:00:00")
+                .timestamp(LocalDateTime.of(2026,1,1,10,0,0))
                 .build();
 
         when(statRepository.save(any(EndpointHitEntity.class)))

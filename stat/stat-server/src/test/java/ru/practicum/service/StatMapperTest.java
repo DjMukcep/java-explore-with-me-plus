@@ -25,7 +25,7 @@ class StatMapperTest {
                 .app("app")
                 .uri("/test")
                 .ip("127.0.0.1")
-                .timestamp("2026-06-18 12:34:56")
+                .timestamp(LocalDateTime.of(2026,6,18,12,34,56))
                 .build();
 
         EndpointHitEntity entity = StatMapper.toHitEntity(dto);
@@ -46,26 +46,11 @@ class StatMapperTest {
                 .app("app")
                 .uri("/test")
                 .ip("127.0.0.1")
-                .timestamp(future.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                .timestamp(future)
                 .build();
 
         assertThatThrownBy(() -> StatMapper.toHitEntity(dto))
                 .isInstanceOf(ValidationException.class)
                 .hasMessage("time of visit can't be in the future");
-    }
-
-    @Test
-    void toHitEntity_shouldThrowException_whenTimestampIsInvalid() {
-
-        EndpointHit dto = EndpointHit.builder()
-                .app("app")
-                .uri("/test")
-                .ip("127.0.0.1")
-                .timestamp("invalid-date")
-                .build();
-
-        assertThatThrownBy(() -> StatMapper.toHitEntity(dto))
-                .isInstanceOf(ValidationException.class)
-                .hasMessage("Invalid time format: invalid-date");
     }
 }
