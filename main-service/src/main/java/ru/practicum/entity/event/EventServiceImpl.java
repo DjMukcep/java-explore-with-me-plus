@@ -20,6 +20,7 @@ import ru.practicum.dto.event.*;
 import ru.practicum.entity.category.Category;
 import ru.practicum.entity.category.CategoryMapper;
 import ru.practicum.entity.category.CategoryService;
+import ru.practicum.entity.event.QEvent;
 import ru.practicum.entity.user.User;
 import ru.practicum.entity.user.UserService;
 import ru.practicum.exception.ConflictException;
@@ -302,5 +303,10 @@ public class EventServiceImpl implements EventService {
                 .collect(Collectors.toMap(
                         vs -> Long.parseLong(vs.getUri().substring("/events/".length())),
                         ViewStats::getHits));
+    }
+
+    @Override
+    public List<Event> getByIds(Collection<Long> ids) {
+        return eventRepository.findAllById(ids);
     }
 }

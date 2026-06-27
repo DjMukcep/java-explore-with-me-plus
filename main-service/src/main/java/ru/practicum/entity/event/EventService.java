@@ -5,6 +5,9 @@ import ru.practicum.dto.event.*;
 
 import java.util.List;
 
+import java.util.Collection;
+import java.util.List;
+
 public interface EventService {
     // Admin
     List<EventFullDto> getEventsByAdmin(EventAdminParamDto params);
@@ -20,4 +23,6 @@ public interface EventService {
     EventFullDto create(Long userId, NewEventDto dto);
 
     EventFullDto getById(Long userId, Long eventId);
+
+    List<Event> getByIds(Collection<Long> ids);
 }

@@ -10,12 +10,6 @@ import ru.practicum.entity.category.CategoryService;
 
 import java.util.List;
 
-/**
- * конечные точки:
- * /categories
- * /categories/{catId}
- */
-
 @RestController
 @RequestMapping(path = "/categories")
 @RequiredArgsConstructor
