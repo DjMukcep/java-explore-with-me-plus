@@ -15,13 +15,14 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class Compilation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 50, unique = true)
     private String title;
 
     @Column(nullable = false)
@@ -47,17 +48,5 @@ public class Compilation {
     @Override
     public int hashCode() {
         return getClass().hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return "Compilation{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", pinned=" + pinned +
-                ", events=" + events.stream()
-                .map(event -> String.format("{id: %d, title: %s}", event.getId(), event.getTitle()))
-                .collect(Collectors.toSet()) +
-                '}';
     }
 }

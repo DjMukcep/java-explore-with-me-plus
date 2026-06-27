@@ -16,6 +16,7 @@ import ru.practicum.dto.compilation.UpdateCompilationRequest;
 import ru.practicum.entity.compilation.QCompilation;
 import ru.practicum.entity.event.Event;
 import ru.practicum.entity.event.EventService;
+import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
 
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class CompilationServiceImpl implements CompilationService {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -47,6 +48,10 @@ public class CompilationServiceImpl implements CompilationService {
         } else {
             BooleanExpression condition = QCompilation.compilation.pinned.eq(dto.getPinned());
             compilations = compilationRepository.findAll(condition, pageRequest).getContent();
+        }
+
+        if (compilations.isEmpty()) {
+            return List.of();
         }
 
         List<Long> eventIds = compilations.stream()
@@ -69,13 +74,23 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(
                 () -> new NotFoundException(String.format("Подборка с id=%d не найдена", compId))
         );
-        List<ViewStats> viewStats = makeRequestToStatsService(List.of(compId));
+
+        List<Long> eventIds = compilation.getEvents().stream()
+                .map(Event::getId)
+                .toList();
+
+        List<ViewStats> viewStats = makeRequestToStatsService(eventIds);
         Map<Long, Long> hitsByEventIds = getHitsByEventIds(viewStats);
         return CompilationMapper.toDto(compilation, hitsByEventIds);
     }
 
     @Override
+    @Transactional
     public CompilationDto create(NewCompilationDto dto) {
+
+        if (compilationRepository.existsByTitle(dto.getTitle())) {
+            throw new ConflictException("Compilation with title " + dto.getTitle() + " already exists");
+        }
 
         List<Event> events = eventService.getByIds(dto.getEvents());
         Compilation entity = CompilationMapper.toEntity(dto, new HashSet<>(events));
@@ -92,18 +107,18 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(
                 () -> new NotFoundException(String.format("Подборка с id=%d не найдена", compId))
         );
-        compilationRepository.deleteById(compId);
+        compilationRepository.delete(compilation);
         log.info("deleted compilation: {}", compilation);
     }
 
     @Override
+    @Transactional
     public CompilationDto update(Long compId, UpdateCompilationRequest request) {
 
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(
                 () -> new NotFoundException(String.format("Подборка с id=%d не найдена", compId))
         );
         updateFields(compilation, request);
-        compilationRepository.save(compilation);
         log.info("updated compilation: {}", compilation);
 
         List<Long> ids = compilation.getEvents().stream()
@@ -148,15 +163,11 @@ public class CompilationServiceImpl implements CompilationService {
     private void updateFields(Compilation old, UpdateCompilationRequest request) {
 
         if (request.getTitle() != null) {
-            if (request.getTitle().isBlank()) {
-                throw new ValidationException("Title can't be empty!");
-            }
-
-            if (request.getTitle().length() > 50) {
-                throw new ValidationException("Title length should be <50");
-            }
-
             if (!old.getTitle().equals(request.getTitle())) {
+                if (compilationRepository.existsByTitle(request.getTitle())) {
+                    throw new ConflictException(String.format("Compilation '%s' already exists", request.getTitle()));
+                }
+
                 old.setTitle(request.getTitle());
             }
         }

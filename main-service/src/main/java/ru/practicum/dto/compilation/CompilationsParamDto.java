@@ -14,11 +14,9 @@ import lombok.NoArgsConstructor;
 public class CompilationsParamDto {
 
     @PositiveOrZero(message = "can't be negative")
-    @Builder.Default
     private int from = 0;
 
     @Positive(message = "must be greater than 0")
-    @Builder.Default
     private int size = 10;
 
     private Boolean pinned;

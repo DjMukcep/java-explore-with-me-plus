@@ -219,8 +219,6 @@ class CompilationAdminControllerTest {
     @Test
     void update_returnBadRequest_whenTitleLengthIsLongerThan50() throws Exception {
         updateCompilation.setTitle("L" + "o".repeat(50) + "ng title");
-        when(compilationService.update(eq(compId), any(UpdateCompilationRequest.class)))
-                .thenThrow(new ValidationException("Title length should be <50"));
 
         String requestBody = objectMapper.writeValueAsString(updateCompilation);
 
@@ -229,8 +227,6 @@ class CompilationAdminControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(requestBody))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
-
-        verify(compilationService).update(eq(compId), eq(updateCompilation));
     }
 
     @Test

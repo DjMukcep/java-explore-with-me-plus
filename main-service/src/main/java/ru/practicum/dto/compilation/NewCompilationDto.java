@@ -1,6 +1,7 @@
 package ru.practicum.dto.compilation;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +17,7 @@ import java.util.Set;
 @Builder
 public class NewCompilationDto {
 
+    @NotNull(message = "events field cannot be null, use empty array [] if no events")
     private Set<Long> events = new HashSet<>();
     @Builder.Default
     private Boolean pinned = false;

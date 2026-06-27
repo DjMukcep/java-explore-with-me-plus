@@ -22,6 +22,7 @@ import ru.practicum.entity.event.Event;
 import ru.practicum.entity.event.EventService;
 import ru.practicum.entity.event.EventState;
 import ru.practicum.entity.user.User;
+import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
 
@@ -250,7 +251,7 @@ class CompilationServiceImplTest {
         compilationService.delete(COMP_ID_1);
 
         verify(compilationRepository).findById(COMP_ID_1);
-        verify(compilationRepository).deleteById(COMP_ID_1);
+        verify(compilationRepository).delete(compilation1);
         verifyNoMoreInteractions(statClient, eventService);
     }
 
@@ -291,38 +292,25 @@ class CompilationServiceImplTest {
         assertThat(result.getId(), is(COMP_ID_1));
 
         verify(compilationRepository).findById(COMP_ID_1);
-        verify(compilationRepository).save(eq(compilation1));
         verify(statClient).getViewStats(any());
     }
 
     @Test
-    void update_whenTitleIsBlank_throwsValidationException() {
+    void update_whenTitleExists_throwsConflictException() {
         UpdateCompilationRequest request = new UpdateCompilationRequest();
-        request.setTitle("");
+        request.setTitle("existing title");
 
         when(compilationRepository.findById(COMP_ID_1)).thenReturn(Optional.of(compilation1));
+        when(compilationRepository.existsByTitle(request.getTitle())).thenReturn(true);
 
-        assertThrows(
-                ValidationException.class,
+        ConflictException conflictException = assertThrows(
+                ConflictException.class,
                 () -> compilationService.update(COMP_ID_1, request)
         );
 
-        verify(compilationRepository).findById(COMP_ID_1);
-        verifyNoInteractions(eventService, statClient);
-    }
-
-    @Test
-    void update_whenTitleTooLong_throwsValidationException() {
-        UpdateCompilationRequest request = new UpdateCompilationRequest();
-        request.setTitle("A".repeat(51)); // больше 50 символов
-
-        when(compilationRepository.findById(COMP_ID_1)).thenReturn(Optional.of(compilation1));
-
-        assertThrows(
-                ValidationException.class,
-                () -> compilationService.update(COMP_ID_1, request)
-        );
-
+        assertThat(conflictException.getMessage(), equalTo(
+                String.format("Compilation '%s' already exists", request.getTitle())
+        ));
         verify(compilationRepository).findById(COMP_ID_1);
         verifyNoInteractions(eventService, statClient);
     }
@@ -339,7 +327,6 @@ class CompilationServiceImplTest {
 
         verify(compilationRepository).findById(COMP_ID_1);
         verifyNoInteractions(eventService);
-        verify(compilationRepository).save(eq(compilation1));
     }
 
     private List<ViewStats> prepareViewStatsForEvents(List<Long> eventIds) {

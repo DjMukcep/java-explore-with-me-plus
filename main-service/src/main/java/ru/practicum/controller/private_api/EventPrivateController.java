@@ -8,12 +8,7 @@ import ru.practicum.dto.event.EventFullDto;
 import ru.practicum.dto.event.NewEventDto;
 import ru.practicum.entity.event.EventService;
 
-/**
- * конечные точки:
- * /users/{userId}/events
- * /users/{userId}/events/{eventId}
- * /users/{userId}/events/{eventId}/requests
- */
+
 @RestController
 @RequestMapping(path = "/users")
 @RequiredArgsConstructor

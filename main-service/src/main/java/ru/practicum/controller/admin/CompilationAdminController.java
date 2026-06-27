@@ -11,11 +11,6 @@ import ru.practicum.dto.compilation.NewCompilationDto;
 import ru.practicum.dto.compilation.UpdateCompilationRequest;
 import ru.practicum.entity.compilation.CompilationService;
 
-/**
- * конечные точки:
- * /admin/compilations
- * /admin/compilations/{compId}
- */
 @RestController
 @RequestMapping(path = "/admin/compilations")
 @RequiredArgsConstructor
@@ -37,7 +32,7 @@ public class CompilationAdminController {
     }
 
     @PatchMapping("/{compId}")
-    public CompilationDto update(@PathVariable @Positive Long compId, @RequestBody UpdateCompilationRequest request) {
+    public CompilationDto update(@PathVariable @Positive Long compId, @RequestBody @Valid UpdateCompilationRequest request) {
         return compilationService.update(compId, request);
     }
 }

@@ -1,5 +1,6 @@
 package ru.practicum.dto.compilation;
 
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +15,7 @@ import java.util.Set;
 public class UpdateCompilationRequest {
 
     private Set<Long> events;
+    @Size(min = 1, max = 50, message = "length should be >=1 and <=50")
     private String title;
     private Boolean pinned;
 }

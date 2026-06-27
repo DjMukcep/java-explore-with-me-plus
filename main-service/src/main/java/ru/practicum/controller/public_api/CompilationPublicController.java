@@ -11,11 +11,6 @@ import ru.practicum.entity.compilation.CompilationService;
 
 import java.util.List;
 
-/**
- * конечные точки:
- * /compilations
- * /compilations/{compId}
- */
 @RestController
 @RequestMapping(path = "/compilations")
 @RequiredArgsConstructor

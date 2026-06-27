@@ -9,11 +9,6 @@ import ru.practicum.dto.category.CategoryDto;
 import ru.practicum.dto.category.NewCategoryDto;
 import ru.practicum.entity.category.CategoryService;
 
-/**
- * конечные точки:
- * /admin/categories
- * /admin/categories/{catId}
- */
 @RestController
 @RequestMapping(path = "/admin/categories")
 @RequiredArgsConstructor
