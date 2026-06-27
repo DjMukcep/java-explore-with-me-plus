@@ -18,7 +18,6 @@ import ru.practicum.entity.event.Event;
 import ru.practicum.entity.event.EventService;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
-import ru.practicum.exception.ValidationException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

@@ -24,7 +24,6 @@ import ru.practicum.entity.event.EventState;
 import ru.practicum.entity.user.User;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
-import ru.practicum.exception.ValidationException;
 
 import java.time.LocalDateTime;
 import java.util.*;

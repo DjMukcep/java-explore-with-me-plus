@@ -6,7 +6,6 @@ import ru.practicum.entity.event.Event;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "compilations")
