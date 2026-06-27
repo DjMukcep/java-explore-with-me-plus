@@ -16,7 +16,7 @@ import ru.practicum.dto.compilation.CompilationDto;
 import ru.practicum.dto.compilation.CompilationsParamDto;
 import ru.practicum.dto.compilation.NewCompilationDto;
 import ru.practicum.dto.compilation.UpdateCompilationRequest;
-import ru.practicum.entity.Location;
+import ru.practicum.dto.event.Location;
 import ru.practicum.entity.category.Category;
 import ru.practicum.entity.event.Event;
 import ru.practicum.entity.event.EventService;

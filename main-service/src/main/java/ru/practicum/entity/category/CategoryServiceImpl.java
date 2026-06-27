@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.category.CategoriesParamDto;
 import ru.practicum.dto.category.CategoryDto;
 import ru.practicum.dto.category.NewCategoryDto;
+import ru.practicum.entity.event.EventRepository;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 
@@ -17,13 +18,15 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class CategoryServiceImpl implements CategoryService {
+
     private final CategoryRepository categoryRepository;
+    private final EventRepository eventRepository;
 
     @Override
     @Transactional
     public CategoryDto create(NewCategoryDto payload) {
         if (categoryRepository.findByName(payload.getName()).isPresent()) {
-            throw new ConflictException("Категория уже существует!");
+            throw new ConflictException("This name is already taken");
         }
         return CategoryMapper.toDto(categoryRepository.save(CategoryMapper.createToEntity(payload)));
     }
@@ -31,17 +34,21 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public void delete(long id) {
-        categoryRepository.findById(id).orElseThrow(() -> new NotFoundException("Категория с таким ID не существует!"));
-        categoryRepository.deleteById(id);
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Category not found!"));
+        if (eventRepository.existsByCategoryId(id)) {
+            throw new ConflictException("Category has related events!");
+        }
+        categoryRepository.delete(category);
     }
 
     @Override
     @Transactional
     public CategoryDto update(long id, CategoryDto payload) {
-        categoryRepository.findById(id).orElseThrow(() -> new NotFoundException("Категория с таким ID не существует!"));
+        categoryRepository.findById(id).orElseThrow(() -> new NotFoundException("Category not found!"));
         categoryRepository.findByName(payload.getName()).ifPresent(category -> {
             if (category.getId() != id) {
-                throw new ConflictException("Категория уже существует!");
+                throw new ConflictException("This category already exists!");
             }
         });
         return CategoryMapper.toDto(categoryRepository.save(CategoryMapper.updateToEntity(id, payload)));
@@ -55,6 +62,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDto findById(long id) {
-        return CategoryMapper.toDto(categoryRepository.findById(id).orElseThrow(() -> new NotFoundException("Категория с таким ID не существует!")));
+        return CategoryMapper.toDto(categoryRepository
+                .findById(id).orElseThrow(() -> new NotFoundException("Category not found!")));
     }
 }

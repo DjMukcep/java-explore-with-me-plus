@@ -7,13 +7,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.entity.event.UserStateAction;
 
 import java.time.LocalDateTime;
 
-/**
- * Данные для изменения информации о событии. Если поле в запросе не указано (равно null)
- * - значит изменение этих данных не требуется.
- */
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -37,7 +35,7 @@ public class UpdateEventUserRequest {
     private Integer participantLimit;
 
     private Boolean requestModeration;
-    private StateAction stateAction;
+    private UserStateAction stateAction;
 
     @Size(min = 3, max = 120)
     private String title;

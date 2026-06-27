@@ -83,8 +83,6 @@ class CompilationAdminControllerTest {
                 .category(category)
                 .eventDate(eventDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
                 .paid(false)
-                .requestModeration(true)
-                .state(EventState.PENDING.name())
                 .views(views)
                 .build();
 

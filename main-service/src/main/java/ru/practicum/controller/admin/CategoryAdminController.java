@@ -20,7 +20,7 @@ public class CategoryAdminController {
     @ResponseStatus(HttpStatus.CREATED)
     public CategoryDto create(@Valid @RequestBody NewCategoryDto payload) {
         CategoryDto response = categoryService.create(payload);
-        log.info("Created category: {}", response);
+        log.info("Новая категория: {}", response);
         return response;
     }
 
@@ -28,14 +28,14 @@ public class CategoryAdminController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable long id) {
         categoryService.delete(id);
-        log.info("Deleted category with ID = {}", id);
+        log.info("Категория удалена ID: {}", id);
     }
 
     @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public CategoryDto update(@PathVariable long id, @Valid @RequestBody CategoryDto payload) {
         CategoryDto response = categoryService.update(id, payload);
-        log.info("Updated category with ID = {}, payload = {}", id, payload);
+        log.info("Категория обновлена: {}", payload);
         return response;
     }
 }

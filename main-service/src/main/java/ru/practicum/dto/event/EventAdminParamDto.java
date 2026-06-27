@@ -1,5 +1,7 @@
 package ru.practicum.dto.event;
 
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,6 +26,9 @@ public class EventAdminParamDto {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime rangeEnd;
 
+    @PositiveOrZero
     private int from = 0;
+
+    @Positive
     private int size = 10;
 }

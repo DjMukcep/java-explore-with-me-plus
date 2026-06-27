@@ -12,17 +12,23 @@ import java.time.format.DateTimeParseException;
 @UtilityClass
 public class StatMapper {
 
-    public static EndpointHitEntity toHitEntity(EndpointHit endpointHit) {
+    private static final DateTimeFormatter formatter =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-        if (endpointHit.getTimestamp().isAfter(LocalDateTime.now())) {
-            throw new ValidationException("time of visit can't be in the future");
+    public static EndpointHitEntity toHitEntity(EndpointHit endpointHit) {
+        LocalDateTime time;
+
+        try {
+            time = LocalDateTime.parse(endpointHit.getTimestamp(), formatter);
+        } catch (DateTimeParseException e) {
+            throw new ValidationException("Invalid time format: " + endpointHit.getTimestamp());
         }
 
         return EndpointHitEntity.builder()
                 .app(endpointHit.getApp())
                 .uri(endpointHit.getUri())
                 .ip(endpointHit.getIp())
-                .timestamp(endpointHit.getTimestamp())
+                .timestamp(time)
                 .build();
     }
 }

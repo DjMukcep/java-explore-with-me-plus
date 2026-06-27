@@ -15,9 +15,6 @@ import static org.hamcrest.Matchers.equalTo;
 
 class StatMapperTest {
 
-    private static final DateTimeFormatter FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
     @Test
     void toHitEntity_shouldMapCorrectly() {
 
@@ -25,7 +22,7 @@ class StatMapperTest {
                 .app("app")
                 .uri("/test")
                 .ip("127.0.0.1")
-                .timestamp(LocalDateTime.of(2026,6,18,12,34,56))
+                .timestamp("2026-06-18 12:34:56")
                 .build();
 
         EndpointHitEntity entity = StatMapper.toHitEntity(dto);
@@ -38,19 +35,17 @@ class StatMapperTest {
     }
 
     @Test
-    void toHitEntity_shouldThrowException_whenTimestampIsInFuture() {
-
-        LocalDateTime future = LocalDateTime.now().plusDays(1);
+    void toHitEntity_shouldThrowException_whenTimestampIsInvalid() {
 
         EndpointHit dto = EndpointHit.builder()
                 .app("app")
                 .uri("/test")
                 .ip("127.0.0.1")
-                .timestamp(future)
+                .timestamp("invalid-date")
                 .build();
 
         assertThatThrownBy(() -> StatMapper.toHitEntity(dto))
                 .isInstanceOf(ValidationException.class)
-                .hasMessage("time of visit can't be in the future");
+                .hasMessage("Invalid time format: invalid-date");
     }
 }

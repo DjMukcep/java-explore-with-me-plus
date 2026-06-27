@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -51,7 +50,7 @@ class StatClientTest {
                 "ewm-main",
                 "/events/1",
                 "192.168.1.1",
-                LocalDateTime.of(2026,6,18,10,0,0));
+                "2026-06-18 10:00:00");
 
         mockServer.expect(requestTo(BASE_URL + "/hit"))
                 .andExpect(method(HttpMethod.POST))

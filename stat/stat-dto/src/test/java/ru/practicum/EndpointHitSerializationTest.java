@@ -36,7 +36,7 @@ public class EndpointHitSerializationTest {
                 .app(APP)
                 .uri(URI)
                 .ip(IP)
-                .timestamp(TIMESTAMP)
+                .timestamp(TIMESTAMP.format(formatter))
                 .build();
 
         String json = objectMapper.writeValueAsString(endpointHit);

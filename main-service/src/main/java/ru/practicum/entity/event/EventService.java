@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import ru.practicum.dto.event.*;
 import ru.practicum.dto.request.ParticipationRequestDto;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface EventService {
@@ -24,6 +25,8 @@ public interface EventService {
     EventFullDto getById(Long userId, Long eventId);
 
     List<EventShortDto> getUserEvents(Long userId, Pageable pageable);
+
+    List<Event> getByIds(Collection<Long> ids);
 
     EventFullDto updateEventByCreatorId(EventParamDto eventParamDto, UpdateEventUserRequest request);
 

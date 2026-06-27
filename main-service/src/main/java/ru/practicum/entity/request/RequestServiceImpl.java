@@ -40,9 +40,10 @@ public class RequestServiceImpl implements RequestService {
         Request request = RequestMapper.toRequest(event, user);
         request = requestRepository.save(request);
 
-        log.info("Request saved: {}", request);
+        var requestDto = RequestMapper.toRequestDto(request);
+        log.info("Новая заявка на событие: {}", requestDto);
 
-        return RequestMapper.toRequestDto(request);
+        return requestDto;
     }
 
     @Override
@@ -55,9 +56,11 @@ public class RequestServiceImpl implements RequestService {
         }
 
         request.setStatus(RequestStatus.CANCELED);
-        log.info("Request cancelled: {}", request);
 
-        return RequestMapper.toRequestDto(request);
+        var requestDto = RequestMapper.toRequestDto(request);
+        log.info("Заявка на событие отменена: {}", requestDto);
+
+        return requestDto;
     }
 
     @Override

@@ -2,14 +2,10 @@ package ru.practicum;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
-
-import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -29,7 +25,6 @@ public class EndpointHit {
     @NotBlank(message = "can't be empty")
     private String ip;
 
-    @NotNull(message = "must not be null")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime timestamp;
+    @NotBlank(message = "can't be empty")
+    private String timestamp;
 }

@@ -15,12 +15,7 @@ import ru.practicum.entity.event.EventService;
 
 import java.util.List;
 
-/**
- * конечные точки:
- * /users/{userId}/events
- * /users/{userId}/events/{eventId}
- * /users/{userId}/events/{eventId}/requests
- */
+
 @RestController
 @RequestMapping(path = "/users")
 @RequiredArgsConstructor
