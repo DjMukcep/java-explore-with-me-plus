@@ -10,11 +10,15 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/**
+ * Данные для изменения информации о событии. Если поле в запросе не указано (равно null)
+ * - значит изменение этих данных не требуется.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UpdateEventAdminRequest {
+public class UpdateEventUserRequest {
     @Size(min = 20, max = 2000)
     private String annotation;
 
@@ -27,15 +31,13 @@ public class UpdateEventAdminRequest {
     private LocalDateTime eventDate;
 
     private Location location;
-
     private Boolean paid;
 
     @PositiveOrZero
     private Integer participantLimit;
 
     private Boolean requestModeration;
-
-    private String stateAction; // PUBLISH_EVENT, REJECT_EVENT
+    private StateAction stateAction;
 
     @Size(min = 3, max = 120)
     private String title;

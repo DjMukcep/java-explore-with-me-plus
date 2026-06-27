@@ -2,12 +2,12 @@ package ru.practicum.dto.event;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.dto.Location;
 
 @Data
 @AllArgsConstructor
@@ -23,11 +23,11 @@ public class NewEventDto {
     private Long category;
 
     @NotBlank
-    @Size(min = 20, max = 7000, message = "length should be >20 and <7000")
+    @Size(min = 20, max = 7000, message = "length should be >20 and <7000") //убрать сообщения
     private String description;
 
     @NotBlank
-    private String eventDate;
+    private String eventDate; // поменять на LocalDate
 
     @NotNull
     private Location location;
@@ -36,6 +36,7 @@ public class NewEventDto {
     private Boolean paid = false;
 
     @Builder.Default
+    @PositiveOrZero
     private Integer participantLimit = 0;
 
     @Builder.Default

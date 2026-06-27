@@ -1,4 +1,4 @@
-package ru.practicum.entity;
+package ru.practicum.dto.event;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

@@ -33,7 +33,7 @@ public class RequestMapper {
                 .build();
     }
 
-    public static List<ParticipationRequestDto> toRequestDtos(List<Request> requests) {
+    public static List<ParticipationRequestDto> toRequestDto(List<Request> requests) {
         return requests.stream()
                 .map(RequestMapper::toRequestDto)
                 .toList();

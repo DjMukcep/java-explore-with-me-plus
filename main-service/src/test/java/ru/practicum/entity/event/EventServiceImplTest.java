@@ -10,10 +10,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import ru.practicum.StatClient;
 import ru.practicum.dto.category.CategoryDto;
-import ru.practicum.dto.event.EventAdminParamDto;
-import ru.practicum.dto.event.EventFullDto;
-import ru.practicum.dto.event.NewEventDto;
-import ru.practicum.dto.event.UpdateEventAdminRequest;
+import ru.practicum.dto.event.*;
 import ru.practicum.entity.category.Category;
 import ru.practicum.entity.category.CategoryService;
 import ru.practicum.entity.user.User;
@@ -150,7 +147,7 @@ class EventServiceImplTest {
                 .description("description")
                 .eventDate(futureDate)
                 .title("title")
-                .location(ru.practicum.dto.Location.builder().lat(1.0f).lon(1.0f).build())
+                .location(Location.builder().lat(1.0f).lon(1.0f).build())
                 .build();
 
         when(userService.findById(1L)).thenReturn(user);

@@ -107,7 +107,7 @@ class RequestMapperTest {
                 .build();
 
         List<ParticipationRequestDto> result =
-                RequestMapper.toRequestDtos(List.of(request1, request2));
+                RequestMapper.toRequestDto(List.of(request1, request2));
 
         assertEquals(2, result.size());
         assertEquals(10L, result.get(0).getId());
@@ -117,7 +117,7 @@ class RequestMapperTest {
     @Test
     void toRequestDtos_shouldReturnEmptyList() {
         List<ParticipationRequestDto> result =
-                RequestMapper.toRequestDtos(Collections.emptyList());
+                RequestMapper.toRequestDto(Collections.emptyList());
 
         assertTrue(result.isEmpty());
     }

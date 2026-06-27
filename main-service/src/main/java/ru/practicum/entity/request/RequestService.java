@@ -1,5 +1,6 @@
 package ru.practicum.entity.request;
 
+import ru.practicum.dto.event.EventRequestsCountDto;
 import ru.practicum.dto.request.ParticipationRequestDto;
 
 import java.util.List;
@@ -11,4 +12,12 @@ public interface RequestService {
     ParticipationRequestDto cancelRequest(Long userId, Long requestId);
 
     List<ParticipationRequestDto> getUserRequests(Long userId);
+
+    List<EventRequestsCountDto> countByEventIdsAndStatus(List<Long> ids, RequestStatus status);
+
+    long countByEventIdAndStatus(Long eventId, RequestStatus status);
+
+    List<Request> findByIds(List<Long> ids);
+
+    List<ParticipationRequestDto> getParticipationRequestsByEventId(Long eventId);
 }

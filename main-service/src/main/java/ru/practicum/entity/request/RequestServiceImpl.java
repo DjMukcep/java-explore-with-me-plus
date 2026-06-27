@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.dto.event.EventRequestsCountDto;
 import ru.practicum.dto.request.ParticipationRequestDto;
 import ru.practicum.entity.event.Event;
 import ru.practicum.entity.event.EventRepository;
@@ -63,7 +64,27 @@ public class RequestServiceImpl implements RequestService {
     public List<ParticipationRequestDto> getUserRequests(Long userId) {
         userService.checkUserExist(userId);
 
-        return RequestMapper.toRequestDtos(requestRepository.findByUserId(userId));
+        return RequestMapper.toRequestDto(requestRepository.findByUserId(userId));
+    }
+
+    @Override
+    public List<EventRequestsCountDto> countByEventIdsAndStatus(List<Long> ids, RequestStatus status) {
+        return requestRepository.countByEventIdInAndStatus(ids, status);
+    }
+
+    @Override
+    public long countByEventIdAndStatus(Long eventId, RequestStatus status) {
+        return requestRepository.countByEventIdAndStatus(eventId, status);
+    }
+
+    @Override
+    public List<Request> findByIds(List<Long> ids) {
+        return requestRepository.findByIdIn(ids);
+    }
+
+    @Override
+    public List<ParticipationRequestDto> getParticipationRequestsByEventId(Long eventId) {
+        return RequestMapper.toRequestDto(requestRepository.findByEventId(eventId));
     }
 
     private boolean existsByUserIdAndEventId(Long userId, Long eventId) {
@@ -91,10 +112,11 @@ public class RequestServiceImpl implements RequestService {
         }
 
         if (event.getParticipantLimit() != 0) {
-            long requests = requestRepository.countByEvent_IdAndStatus(event.getId(), RequestStatus.CONFIRMED);
+            long requests = countByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED);
             if (requests >= event.getParticipantLimit()) {
                 throw new ConflictException("The participant limit has been reached.");
             }
         }
     }
+
 }
