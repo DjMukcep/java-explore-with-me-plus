@@ -15,7 +15,7 @@ import java.util.Set;
 public class UpdateCompilationRequest {
 
     private Set<Long> events;
-    @Size(min = 1, max = 50, message = "length should be >=1 and <=50")
+    @Size(min = 1, max = 50)
     private String title;
     private Boolean pinned;
 }

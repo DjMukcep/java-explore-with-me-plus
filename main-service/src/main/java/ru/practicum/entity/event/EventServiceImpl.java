@@ -401,12 +401,14 @@ public class EventServiceImpl implements EventService {
     }
 
     private void sendHit(HttpServletRequest request) {
-        statClient.hit(EndpointHit.builder()
+        EndpointHit endpointHit = EndpointHit.builder()
                 .app(APP_NAME)
                 .uri(request.getRequestURI())
                 .ip(request.getRemoteAddr())
                 .timestamp(LocalDateTime.now().format(FORMATTER))
-                .build());
+                .build();
+        statClient.hit(endpointHit);
+        log.info("На сервер статистики отправлен endpointHit: {}", endpointHit);
     }
 
     private Map<Long, Long> getViewsMap(List<Event> events) {

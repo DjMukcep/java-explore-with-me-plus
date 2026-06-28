@@ -144,6 +144,9 @@ public class EventMapper {
     }
 
     private static String stringBuilder(String string) {
+        if (string == null) {
+            return null;
+        }
         return string.length() > 10 ? string.substring(0, 10) + "..." : string;
     }
 }

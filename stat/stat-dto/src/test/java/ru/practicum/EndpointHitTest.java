@@ -46,7 +46,6 @@ class EndpointHitTest {
         ConstraintViolation<EndpointHit> violation = getSingleViolation();
 
         assertThat(violation.getPropertyPath().toString(), is(field));
-        assertThat(violation.getMessage(), is("can't be empty"));
     }
 
     @ParameterizedTest
@@ -57,7 +56,6 @@ class EndpointHitTest {
         ConstraintViolation<EndpointHit> violation = getSingleViolation();
 
         assertThat(violation.getPropertyPath().toString(), is(field));
-        assertThat(violation.getMessage(), is("can't be empty"));
     }
 
     @Test

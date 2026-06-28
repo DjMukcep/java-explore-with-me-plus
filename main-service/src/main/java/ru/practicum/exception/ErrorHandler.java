@@ -2,6 +2,7 @@ package ru.practicum.exception;
 
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import lombok.extern.slf4j.Slf4j;
@@ -115,17 +116,6 @@ public class ErrorHandler {
                 .build();
     }
 
-    @ExceptionHandler(ConditionsNotMetException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError handleConditionsNotMetException(final ConditionsNotMetException e) {
-        return ApiError.builder()
-                .message(e.getMessage())
-                .reason("Logical conditions hasn't met.")
-                .status(HttpStatus.CONFLICT.name())
-                .timestamp(LocalDateTime.now().format(formatter))
-                .build();
-    }
-
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiError handleException(final Exception e) {
@@ -139,27 +129,12 @@ public class ErrorHandler {
                 .build();
     }
 
-    @ExceptionHandler(NumberFormatException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError handleNumberFormatException(final NumberFormatException e) {
-        log.warn("Ошибка преобразования числа: {}", e.getMessage());
-
-        return ApiError.builder()
-                .errors(null)
-                .message(e.getMessage())
-                .reason("Incorrectly made request.")
-                .status(HttpStatus.BAD_REQUEST.name())
-                .timestamp(LocalDateTime.now().format(formatter))
-                .build();
-    }
-
     @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError handleHttpMessageNotReadableException(final org.springframework.http.converter.HttpMessageNotReadableException e) {
+    public ApiError handleHttpMessageNotReadableException(final HttpMessageNotReadableException e) {
         log.warn("Некорректное тело запроса: {}", e.getMessage());
 
         return ApiError.builder()
-                .errors(null)
                 .message("Malformed JSON request")
                 .reason("Incorrectly made request.")
                 .status(HttpStatus.BAD_REQUEST.name())

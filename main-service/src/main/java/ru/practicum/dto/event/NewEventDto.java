@@ -16,18 +16,18 @@ import lombok.NoArgsConstructor;
 public class NewEventDto {
 
     @NotBlank
-    @Size(min = 20, max = 2000, message = "length should be >20 and <2000")
+    @Size(min = 20, max = 2000)
     private String annotation;
 
     @NotNull
     private Long category;
 
     @NotBlank
-    @Size(min = 20, max = 7000, message = "length should be >20 and <7000") //убрать сообщения
+    @Size(min = 20, max = 7000)
     private String description;
 
     @NotBlank
-    private String eventDate; // поменять на LocalDate
+    private String eventDate;
 
     @NotNull
     private Location location;
@@ -43,6 +43,6 @@ public class NewEventDto {
     private Boolean requestModeration = true;
 
     @NotBlank
-    @Size(min = 3, max = 120, message = "length should be >3 and <120")
+    @Size(min = 3, max = 120)
     private String title;
 }

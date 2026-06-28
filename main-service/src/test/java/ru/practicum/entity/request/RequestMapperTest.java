@@ -17,6 +17,7 @@ class RequestMapperTest {
     void toRequest_shouldCreatePendingRequest_whenModerationEnabled() {
         Event event = Event.builder()
                 .id(1L)
+                .participantLimit(5)
                 .requestModeration(true)
                 .build();
 

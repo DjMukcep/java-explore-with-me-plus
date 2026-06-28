@@ -34,9 +34,9 @@ public class EventPublicParamDto {
 
     private String sort;
 
-    @PositiveOrZero(message = "can't be negative")
+    @PositiveOrZero
     private int from = 0;
 
-    @Positive(message = "must be greater than 0")
+    @Positive
     private int size = 10;
 }

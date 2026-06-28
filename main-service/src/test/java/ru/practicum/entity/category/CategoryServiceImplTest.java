@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import ru.practicum.dto.category.CategoriesParamDto;
 import ru.practicum.dto.category.CategoryDto;
 import ru.practicum.dto.category.NewCategoryDto;
+import ru.practicum.entity.event.EventRepository;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 
@@ -26,6 +27,9 @@ import static org.mockito.Mockito.*;
 class CategoryServiceImplTest {
     @Mock
     private CategoryRepository categoryRepository;
+
+    @Mock
+    private EventRepository eventRepository;
 
     @InjectMocks
     private CategoryServiceImpl categoryService;
@@ -60,7 +64,7 @@ class CategoryServiceImplTest {
 
         assertThatThrownBy(() -> categoryService.create(payload))
                 .isInstanceOf(ConflictException.class)
-                        .hasMessage("Категория уже существует!");
+                        .hasMessage("This name is already taken");
 
         verifyNoMoreInteractions(categoryRepository);
     }
@@ -71,12 +75,13 @@ class CategoryServiceImplTest {
                 .id(1L)
                 .name("Event name")
                 .build();
-        when(categoryRepository.findById(1L))
-                .thenReturn(Optional.ofNullable(category));
+
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
+        when(eventRepository.existsByCategoryId(1L)).thenReturn(false);
 
         categoryService.delete(1L);
 
-        verify(categoryRepository).deleteById(1L);
+        verify(categoryRepository).delete(category);
     }
 
     @Test
@@ -86,7 +91,7 @@ class CategoryServiceImplTest {
 
         assertThatThrownBy(() -> categoryService.delete(1L))
                 .isInstanceOf(NotFoundException.class)
-                .hasMessage("Категория с таким ID не существует!");
+                .hasMessage("Category not found!");
     }
 
     @Test
@@ -123,7 +128,7 @@ class CategoryServiceImplTest {
 
         assertThatThrownBy(() -> categoryService.update(1, payload))
                 .isInstanceOf(NotFoundException.class)
-                        .hasMessage("Категория с таким ID не существует!");
+                        .hasMessage("Category not found!");
 
         verifyNoMoreInteractions(categoryRepository);
     }
@@ -148,7 +153,7 @@ class CategoryServiceImplTest {
 
         assertThatThrownBy(() -> categoryService.update(2, payload))
                 .isInstanceOf(ConflictException.class)
-                .hasMessage("Категория уже существует!");
+                .hasMessage("This category already exists!");
 
         verifyNoMoreInteractions(categoryRepository);
     }
