@@ -13,7 +13,6 @@ import ru.practicum.dto.compilation.CompilationDto;
 import ru.practicum.dto.compilation.CompilationsParamDto;
 import ru.practicum.dto.compilation.NewCompilationDto;
 import ru.practicum.dto.compilation.UpdateCompilationRequest;
-import ru.practicum.entity.compilation.QCompilation;
 import ru.practicum.entity.event.Event;
 import ru.practicum.entity.event.EventService;
 import ru.practicum.exception.ConflictException;
@@ -69,10 +68,7 @@ public class CompilationServiceImpl implements CompilationService {
 
     @Override
     public CompilationDto getById(Long compId) {
-
-        Compilation compilation = compilationRepository.findById(compId).orElseThrow(
-                () -> new NotFoundException(String.format("Compilation with id=%d not found", compId))
-        );
+        Compilation compilation = getByIdWithEvents(compId);
 
         List<Long> eventIds = compilation.getEvents().stream()
                 .map(Event::getId)
@@ -116,10 +112,8 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     @Transactional
     public CompilationDto update(Long compId, UpdateCompilationRequest request) {
+        Compilation compilation = getByIdWithEvents(compId);
 
-        Compilation compilation = compilationRepository.findById(compId).orElseThrow(
-                () -> new NotFoundException(String.format("Compilation with id=%d not found", compId))
-        );
         updateFields(compilation, request);
 
         List<Long> ids = compilation.getEvents().stream()
@@ -131,6 +125,12 @@ public class CompilationServiceImpl implements CompilationService {
         log.info("Подборка событий обновлена: {}", CompilationMapper.toLog(compilationDto));
 
         return compilationDto;
+    }
+
+    private Compilation getByIdWithEvents(Long compId) {
+        return compilationRepository.findWithEventsById(compId).orElseThrow(
+                () -> new NotFoundException(String.format("Compilation with id=%d not found", compId))
+        );
     }
 
     private Map<Long, Long> getHitsByEventIds(List<ViewStats> stats) {

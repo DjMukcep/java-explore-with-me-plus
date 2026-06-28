@@ -4,11 +4,11 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 
-import java.util.List;
+import java.util.Set;
 
 @Data
 public class UserParamDto {
-    private List<Integer> ids;
+    private Set<Long> ids;
 
     @PositiveOrZero
     private int from = 0;

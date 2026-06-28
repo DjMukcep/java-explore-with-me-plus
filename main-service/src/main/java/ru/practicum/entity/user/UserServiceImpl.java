@@ -38,10 +38,7 @@ public class UserServiceImpl implements UserService {
     public List<UserDto> getUsers(UserParamDto userParamDto) {
 
         if (userParamDto.getIds() != null && !userParamDto.getIds().isEmpty()) {
-            List<Long> ids = userParamDto.getIds().stream()
-                    .map(Integer::longValue)
-                    .toList();
-
+            List<Long> ids = userParamDto.getIds().stream().toList();
             return UserMapper.toUserDtos(userRepository.findAllByIdIn(ids));
         }
 

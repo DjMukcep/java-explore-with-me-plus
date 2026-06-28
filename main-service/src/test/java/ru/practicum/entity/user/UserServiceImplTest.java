@@ -15,6 +15,7 @@ import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -75,21 +76,23 @@ class UserServiceImplTest {
     @Test
     void getUsers_shouldReturnUsersByIds() {
         UserParamDto params = new UserParamDto();
-        params.setIds(List.of(1, 2));
+        params.setIds(Set.of(1L, 2L));
 
         List<User> users = List.of(
                 User.builder().id(1L).mail("a@mail.com").name("A").build(),
                 User.builder().id(2L).mail("b@mail.com").name("B").build()
         );
 
-        when(userRepository.findAllByIdIn(List.of(1L, 2L)))
+        when(userRepository.findAllByIdIn(argThat(ids ->
+                ids.size() == 2 && ids.containsAll(List.of(1L, 2L)))))
                 .thenReturn(users);
 
         List<UserDto> result = userService.getUsers(params);
 
         assertEquals(2, result.size());
 
-        verify(userRepository).findAllByIdIn(List.of(1L, 2L));
+        verify(userRepository).findAllByIdIn(argThat(ids ->
+                ids.size() == 2 && ids.containsAll(List.of(1L, 2L))));
         verify(userRepository, never()).findAll(any(Pageable.class));
     }
 
