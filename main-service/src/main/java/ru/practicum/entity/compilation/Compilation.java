@@ -28,12 +28,10 @@ public class Compilation {
     @Builder.Default
     private Boolean pinned = false;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "compilation_events",
+    @ManyToMany
+    @JoinTable(name = "compilation_events",
             joinColumns = @JoinColumn(name = "compilation_id"),
-            inverseJoinColumns = @JoinColumn(name = "event_id")
-    )
+            inverseJoinColumns = @JoinColumn(name = "event_id"))
     @Builder.Default
     Set<Event> events = new HashSet<>();
 

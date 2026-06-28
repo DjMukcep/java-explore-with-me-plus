@@ -13,10 +13,8 @@ import lombok.NoArgsConstructor;
 @Builder
 public class CategoriesParamDto {
     @PositiveOrZero
-    @Builder.Default
     private int from = 0;
 
     @Positive
-    @Builder.Default
     private int size = 10;
 }

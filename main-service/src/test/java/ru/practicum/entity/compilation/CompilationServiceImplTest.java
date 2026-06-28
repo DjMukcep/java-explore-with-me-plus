@@ -169,7 +169,7 @@ class CompilationServiceImplTest {
 
         List<Compilation> pageContent = List.of(compilation1);
         PageRequest pageRequest = PageRequest.of(0, 5);
-        when(compilationRepository.findAll(ArgumentMatchers.any(BooleanExpression.class), eq(pageRequest)))
+        when(compilationRepository.findAll(ArgumentMatchers.<BooleanExpression>any(), eq(pageRequest)))
                 .thenReturn(new PageImpl<>(pageContent, pageRequest, pageContent.size()));
 
         List<ViewStats> viewStats = prepareViewStatsForEvents(List.of(EVENT_ID_1));
@@ -178,7 +178,7 @@ class CompilationServiceImplTest {
         List<CompilationDto> result = compilationService.getAll(params);
 
         assertThat(result, hasSize(1));
-        assertThat(result.get(0).getId(), is(COMP_ID_1));
+        assertThat(result.getFirst().getId(), is(COMP_ID_1));
 
         verify(compilationRepository).findAll(ArgumentMatchers.any(BooleanExpression.class), eq(pageRequest));
         verify(statClient).getViewStats(any());
@@ -186,7 +186,7 @@ class CompilationServiceImplTest {
 
     @Test
     void getById_whenExists_returnsDtoWithStats() {
-        when(compilationRepository.findById(COMP_ID_1)).thenReturn(Optional.of(compilation1));
+        when(compilationRepository.findWithEventsById(COMP_ID_1)).thenReturn(Optional.of(compilation1));
 
         List<ViewStats> viewStats = prepareViewStatsForEvents(List.of(EVENT_ID_1, EVENT_ID_2));
         when(statClient.getViewStats(any())).thenReturn(viewStats);
@@ -197,21 +197,21 @@ class CompilationServiceImplTest {
         assertThat(result.getTitle(), is("Compilation 1"));
         assertThat(result.getPinned(), is(true));
 
-        verify(compilationRepository).findById(COMP_ID_1);
+        verify(compilationRepository).findWithEventsById(COMP_ID_1);
         verify(statClient).getViewStats(any());
     }
 
     @Test
     void getById_whenNotExists_throwsNotFoundException() {
         long nonExistingId = 999L;
-        when(compilationRepository.findById(nonExistingId)).thenReturn(Optional.empty());
+        when(compilationRepository.findWithEventsById(nonExistingId)).thenReturn(Optional.empty());
 
         assertThrows(
                 NotFoundException.class,
                 () -> compilationService.getById(nonExistingId)
         );
 
-        verify(compilationRepository).findById(nonExistingId);
+        verify(compilationRepository).findWithEventsById(nonExistingId);
         verifyNoInteractions(statClient, eventService);
     }
 
@@ -278,7 +278,7 @@ class CompilationServiceImplTest {
         compilation1.setPinned(request.getPinned());
         compilation1.setEvents(Set.of(event));
 
-        when(compilationRepository.findById(COMP_ID_1))
+        when(compilationRepository.findWithEventsById(COMP_ID_1))
                 .thenReturn(Optional.of(compilation1));
 
         List<ViewStats> viewStats = prepareViewStatsForEvents(new ArrayList<>(request.getEvents()));
@@ -290,7 +290,7 @@ class CompilationServiceImplTest {
         assertThat(result.getPinned(), is(true));
         assertThat(result.getId(), is(COMP_ID_1));
 
-        verify(compilationRepository).findById(COMP_ID_1);
+        verify(compilationRepository).findWithEventsById(COMP_ID_1);
         verify(statClient).getViewStats(any());
     }
 
@@ -299,7 +299,7 @@ class CompilationServiceImplTest {
         UpdateCompilationRequest request = new UpdateCompilationRequest();
         request.setTitle("existing title");
 
-        when(compilationRepository.findById(COMP_ID_1)).thenReturn(Optional.of(compilation1));
+        when(compilationRepository.findWithEventsById(COMP_ID_1)).thenReturn(Optional.of(compilation1));
         when(compilationRepository.existsByTitle(request.getTitle())).thenReturn(true);
 
         ConflictException conflictException = assertThrows(
@@ -310,7 +310,7 @@ class CompilationServiceImplTest {
         assertThat(conflictException.getMessage(), equalTo(
                 String.format("Compilation '%s' already exists", request.getTitle())
         ));
-        verify(compilationRepository).findById(COMP_ID_1);
+        verify(compilationRepository).findWithEventsById(COMP_ID_1);
         verifyNoInteractions(eventService, statClient);
     }
 
@@ -320,11 +320,11 @@ class CompilationServiceImplTest {
         UpdateCompilationRequest request = new UpdateCompilationRequest();
         request.setEvents(sameEventIds);
 
-        when(compilationRepository.findById(COMP_ID_1)).thenReturn(Optional.of(compilation1));
+        when(compilationRepository.findWithEventsById(COMP_ID_1)).thenReturn(Optional.of(compilation1));
 
         compilationService.update(COMP_ID_1, request);
 
-        verify(compilationRepository).findById(COMP_ID_1);
+        verify(compilationRepository).findWithEventsById(COMP_ID_1);
         verifyNoInteractions(eventService);
     }
 
