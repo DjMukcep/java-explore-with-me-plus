@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 import ru.practicum.dto.event.EventFullDto;
 import ru.practicum.dto.event.EventShortDto;
 import ru.practicum.dto.event.Location;
-import ru.practicum.dto.event.UpdateEventAdminRequest;
 import ru.practicum.entity.category.Category;
 import ru.practicum.entity.user.User;
 

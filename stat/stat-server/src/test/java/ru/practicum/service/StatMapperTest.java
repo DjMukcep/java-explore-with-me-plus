@@ -6,7 +6,6 @@ import ru.practicum.exception.ValidationException;
 import ru.practicum.model.EndpointHitEntity;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.hamcrest.MatcherAssert.assertThat;
