@@ -8,7 +8,7 @@ import ru.practicum.dto.compilation.CompilationDto;
 import ru.practicum.dto.compilation.NewCompilationDto;
 import ru.practicum.dto.event.EventShortDto;
 import ru.practicum.dto.user.UserShortDto;
-import ru.practicum.entity.Location;
+import ru.practicum.dto.event.Location;
 import ru.practicum.entity.category.Category;
 import ru.practicum.entity.event.Event;
 import ru.practicum.entity.event.EventMapper;
@@ -114,8 +114,6 @@ class CompilationMapperTest {
                 .eventDate(event1.getEventDate().format(FORMATTER))
                 .initiator(initiatorDto)
                 .paid(event1.getPaid())
-                .requestModeration(event1.getRequestModeration())
-                .state(event1.getState().name())
                 .views(eventHits.get(EVENT_ID_1))
                 .build();
         shortDto2 = EventShortDto.builder()
@@ -126,8 +124,6 @@ class CompilationMapperTest {
                 .eventDate(event2.getEventDate().format(FORMATTER))
                 .initiator(initiatorDto)
                 .paid(event2.getPaid())
-                .requestModeration(event2.getRequestModeration())
-                .state(event2.getState().name())
                 .views(eventHits.get(EVENT_ID_2))
                 .build();
 

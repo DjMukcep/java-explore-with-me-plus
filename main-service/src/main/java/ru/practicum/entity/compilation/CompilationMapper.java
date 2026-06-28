@@ -2,6 +2,7 @@ package ru.practicum.entity.compilation;
 
 import lombok.experimental.UtilityClass;
 import ru.practicum.dto.compilation.CompilationDto;
+import ru.practicum.dto.compilation.LogCompilation;
 import ru.practicum.dto.compilation.NewCompilationDto;
 import ru.practicum.dto.event.EventShortDto;
 import ru.practicum.entity.event.Event;
@@ -22,7 +23,6 @@ public class CompilationMapper {
         dto.setPinned(entity.getPinned());
 
         Set<EventShortDto> events = entity.getEvents().stream()
-                //TODO: confirmedRequests API call
                 .map(event -> EventMapper.toEventShortDto(
                         event, 0L, eventHits.getOrDefault(event.getId(), 0L))
                 )
@@ -31,6 +31,17 @@ public class CompilationMapper {
 
         dto.setEvents(events);
         return dto;
+    }
+
+    public static LogCompilation toLog(CompilationDto compilationDto) {
+        return LogCompilation.builder()
+                .id(compilationDto.getId())
+                .title(compilationDto.getTitle())
+                .pinned(compilationDto.getPinned())
+                .events(compilationDto.getEvents().stream()
+                        .map(EventMapper::toLogEventShort)
+                        .collect(Collectors.toSet()))
+                .build();
     }
 
     public static Compilation toEntity(NewCompilationDto dto, Set<Event> events) {

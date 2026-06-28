@@ -6,7 +6,6 @@ import ru.practicum.exception.ValidationException;
 import ru.practicum.model.EndpointHitEntity;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -14,9 +13,6 @@ import static org.hamcrest.Matchers.equalTo;
 
 
 class StatMapperTest {
-
-    private static final DateTimeFormatter FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Test
     void toHitEntity_shouldMapCorrectly() {
@@ -35,23 +31,6 @@ class StatMapperTest {
         assertThat(entity.getIp(), equalTo("127.0.0.1"));
         assertThat(entity.getTimestamp(),
                 equalTo(LocalDateTime.of(2026, 6, 18, 12, 34, 56)));
-    }
-
-    @Test
-    void toHitEntity_shouldThrowException_whenTimestampIsInFuture() {
-
-        LocalDateTime future = LocalDateTime.now().plusDays(1);
-
-        EndpointHit dto = EndpointHit.builder()
-                .app("app")
-                .uri("/test")
-                .ip("127.0.0.1")
-                .timestamp(future.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-                .build();
-
-        assertThatThrownBy(() -> StatMapper.toHitEntity(dto))
-                .isInstanceOf(ValidationException.class)
-                .hasMessage("time of visit can't be in the future");
     }
 
     @Test

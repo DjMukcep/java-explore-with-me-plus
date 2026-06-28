@@ -17,12 +17,12 @@ import java.util.Set;
 @Builder
 public class NewCompilationDto {
 
-    @NotNull(message = "events field cannot be null, use empty array [] if no events")
+    @NotNull
     private Set<Long> events = new HashSet<>();
     @Builder.Default
     private Boolean pinned = false;
 
-    @NotBlank(message = "can't be empty")
-    @Size(min = 1, max = 50, message = "length should be >1 and <50")
+    @NotBlank
+    @Size(min = 1, max = 50)
     private String title;
 }

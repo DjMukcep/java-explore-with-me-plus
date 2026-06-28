@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.dto.event.EventFullDto;
 import ru.practicum.dto.event.UpdateEventAdminRequest;
+import ru.practicum.entity.event.AdminStateAction;
 import ru.practicum.entity.event.EventService;
 
 import java.util.Collections;
@@ -49,7 +50,7 @@ class EventAdminControllerTest {
                 .build();
 
         UpdateEventAdminRequest request = UpdateEventAdminRequest.builder()
-                .stateAction("PUBLISH_EVENT")
+                .stateAction(AdminStateAction.PUBLISH_EVENT)
                 .build();
 
         when(eventService.updateEventByAdmin(any(), any())).thenReturn(dto);

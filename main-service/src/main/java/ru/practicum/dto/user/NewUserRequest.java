@@ -14,12 +14,12 @@ import org.hibernate.validator.constraints.Length;
 @AllArgsConstructor
 public class NewUserRequest {
 
-    @NotBlank(message = "can't be empty.")
-    @Length(min = 6, max = 254, message = "length must be > 5 and < 255")
+    @NotBlank
+    @Length(min = 6, max = 254)
     @Email
     private String email;
 
-    @NotBlank(message = "can't be empty.")
-    @Length(min = 2, max = 250, message = "length must be > 1 and < 251")
+    @NotBlank
+    @Length(min = 2, max = 250)
     private String name;
 }

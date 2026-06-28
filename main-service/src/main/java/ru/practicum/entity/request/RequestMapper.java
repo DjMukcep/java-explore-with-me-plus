@@ -19,7 +19,7 @@ public class RequestMapper {
                 .event(event)
                 .user(user)
                 .createdAt(LocalDateTime.now())
-                .status(event.getRequestModeration() ? RequestStatus.PENDING : RequestStatus.CONFIRMED)
+                .status(isStatusConfirmed(event) ? RequestStatus.CONFIRMED : RequestStatus.PENDING)
                 .build();
     }
 
@@ -33,9 +33,13 @@ public class RequestMapper {
                 .build();
     }
 
-    public static List<ParticipationRequestDto> toRequestDtos(List<Request> requests) {
+    public static List<ParticipationRequestDto> toRequestDto(List<Request> requests) {
         return requests.stream()
                 .map(RequestMapper::toRequestDto)
                 .toList();
+    }
+
+    private boolean isStatusConfirmed(Event event) {
+        return !event.getRequestModeration() || event.getParticipantLimit() == 0;
     }
 }

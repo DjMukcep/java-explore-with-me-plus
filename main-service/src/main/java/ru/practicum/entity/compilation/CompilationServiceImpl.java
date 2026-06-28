@@ -71,7 +71,7 @@ public class CompilationServiceImpl implements CompilationService {
     public CompilationDto getById(Long compId) {
 
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(
-                () -> new NotFoundException(String.format("Подборка с id=%d не найдена", compId))
+                () -> new NotFoundException(String.format("Compilation with id=%d not found", compId))
         );
 
         List<Long> eventIds = compilation.getEvents().stream()
@@ -94,20 +94,23 @@ public class CompilationServiceImpl implements CompilationService {
         List<Event> events = eventService.getByIds(dto.getEvents());
         Compilation entity = CompilationMapper.toEntity(dto, new HashSet<>(events));
         entity = compilationRepository.save(entity);
-        log.info("created compilation: {}", entity);
 
         List<ViewStats> viewStats = makeRequestToStatsService(dto.getEvents());
-        return CompilationMapper.toDto(entity, getHitsByEventIds(viewStats));
+        var compilationDto = CompilationMapper.toDto(entity, getHitsByEventIds(viewStats));
+        log.info("Новая подборка событий: {}", CompilationMapper.toLog(compilationDto));
+
+        return compilationDto;
     }
 
     @Override
+    @Transactional
     public void delete(Long compId) {
 
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(
-                () -> new NotFoundException(String.format("Подборка с id=%d не найдена", compId))
+                () -> new NotFoundException(String.format("Compilation with id=%d not found", compId))
         );
         compilationRepository.delete(compilation);
-        log.info("deleted compilation: {}", compilation);
+        log.info("Удалена подборка событий id: {}", compilation.getId());
     }
 
     @Override
@@ -115,17 +118,19 @@ public class CompilationServiceImpl implements CompilationService {
     public CompilationDto update(Long compId, UpdateCompilationRequest request) {
 
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(
-                () -> new NotFoundException(String.format("Подборка с id=%d не найдена", compId))
+                () -> new NotFoundException(String.format("Compilation with id=%d not found", compId))
         );
         updateFields(compilation, request);
-        log.info("updated compilation: {}", compilation);
 
         List<Long> ids = compilation.getEvents().stream()
                 .map(Event::getId)
                 .toList();
 
         List<ViewStats> viewStats = makeRequestToStatsService(ids);
-        return CompilationMapper.toDto(compilation, getHitsByEventIds(viewStats));
+        var compilationDto = CompilationMapper.toDto(compilation, getHitsByEventIds(viewStats));
+        log.info("Подборка событий обновлена: {}", CompilationMapper.toLog(compilationDto));
+
+        return compilationDto;
     }
 
     private Map<Long, Long> getHitsByEventIds(List<ViewStats> stats) {

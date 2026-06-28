@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.dto.event.EventRequestsCountDto;
 import ru.practicum.dto.request.ParticipationRequestDto;
 import ru.practicum.entity.event.Event;
 import ru.practicum.entity.event.EventRepository;
@@ -39,9 +40,10 @@ public class RequestServiceImpl implements RequestService {
         Request request = RequestMapper.toRequest(event, user);
         request = requestRepository.save(request);
 
-        log.info("Request saved: {}", request);
+        var requestDto = RequestMapper.toRequestDto(request);
+        log.info("Новая заявка на событие: {}", requestDto);
 
-        return RequestMapper.toRequestDto(request);
+        return requestDto;
     }
 
     @Override
@@ -54,16 +56,38 @@ public class RequestServiceImpl implements RequestService {
         }
 
         request.setStatus(RequestStatus.CANCELED);
-        log.info("Request cancelled: {}", request);
 
-        return RequestMapper.toRequestDto(request);
+        var requestDto = RequestMapper.toRequestDto(request);
+        log.info("Заявка на событие отменена: {}", requestDto);
+
+        return requestDto;
     }
 
     @Override
     public List<ParticipationRequestDto> getUserRequests(Long userId) {
         userService.checkUserExist(userId);
 
-        return RequestMapper.toRequestDtos(requestRepository.findByUserId(userId));
+        return RequestMapper.toRequestDto(requestRepository.findByUserId(userId));
+    }
+
+    @Override
+    public List<EventRequestsCountDto> countByEventIdsAndStatus(List<Long> ids, RequestStatus status) {
+        return requestRepository.countByEventIdInAndStatus(ids, status);
+    }
+
+    @Override
+    public long countByEventIdAndStatus(Long eventId, RequestStatus status) {
+        return requestRepository.countByEventIdAndStatus(eventId, status);
+    }
+
+    @Override
+    public List<Request> findByIds(List<Long> ids) {
+        return requestRepository.findByIdIn(ids);
+    }
+
+    @Override
+    public List<ParticipationRequestDto> getParticipationRequestsByEventId(Long eventId) {
+        return RequestMapper.toRequestDto(requestRepository.findByEventId(eventId));
     }
 
     private boolean existsByUserIdAndEventId(Long userId, Long eventId) {
@@ -91,10 +115,11 @@ public class RequestServiceImpl implements RequestService {
         }
 
         if (event.getParticipantLimit() != 0) {
-            long requests = requestRepository.countByEvent_IdAndStatus(event.getId(), RequestStatus.CONFIRMED);
+            long requests = countByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED);
             if (requests >= event.getParticipantLimit()) {
                 throw new ConflictException("The participant limit has been reached.");
             }
         }
     }
+
 }

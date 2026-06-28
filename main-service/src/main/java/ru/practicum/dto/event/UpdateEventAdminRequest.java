@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.dto.Location;
+import ru.practicum.entity.event.AdminStateAction;
 
 import java.time.LocalDateTime;
 
@@ -35,8 +35,7 @@ public class UpdateEventAdminRequest {
     private Integer participantLimit;
 
     private Boolean requestModeration;
-
-    private String stateAction; // PUBLISH_EVENT, REJECT_EVENT
+    private AdminStateAction stateAction;
 
     @Size(min = 3, max = 120)
     private String title;

@@ -12,11 +12,11 @@ import java.util.List;
 @AllArgsConstructor
 public class ParamDto {
 
-    @NotNull(message = "must not be null")
+    @NotNull
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime start;
 
-    @NotNull(message = "must not be null")
+    @NotNull
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime end;
 

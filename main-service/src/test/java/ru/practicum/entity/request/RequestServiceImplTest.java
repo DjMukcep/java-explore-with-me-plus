@@ -170,7 +170,7 @@ class RequestServiceImplTest {
         when(eventRepository.findById(2L))
                 .thenReturn(Optional.of(event));
 
-        when(requestRepository.countByEvent_IdAndStatus(
+        when(requestRepository.countByEventIdAndStatus(
                 2L,
                 RequestStatus.CONFIRMED))
                 .thenReturn(5L);

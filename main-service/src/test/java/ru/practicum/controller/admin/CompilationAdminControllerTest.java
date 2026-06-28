@@ -17,7 +17,6 @@ import ru.practicum.dto.compilation.UpdateCompilationRequest;
 import ru.practicum.dto.event.EventShortDto;
 import ru.practicum.dto.user.UserShortDto;
 import ru.practicum.entity.compilation.CompilationService;
-import ru.practicum.entity.event.EventState;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
 
@@ -83,8 +82,6 @@ class CompilationAdminControllerTest {
                 .category(category)
                 .eventDate(eventDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
                 .paid(false)
-                .requestModeration(true)
-                .state(EventState.PENDING.name())
                 .views(views)
                 .build();
 

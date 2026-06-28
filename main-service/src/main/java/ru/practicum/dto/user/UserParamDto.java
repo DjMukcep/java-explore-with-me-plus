@@ -10,9 +10,9 @@ import java.util.List;
 public class UserParamDto {
     private List<Integer> ids;
 
-    @PositiveOrZero(message = "can't be negative")
+    @PositiveOrZero
     private int from = 0;
 
-    @Positive(message = "must be greater than 0")
+    @Positive
     private int size = 10;
 }

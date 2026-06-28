@@ -47,7 +47,6 @@ public class ErrorHandler {
         log.warn("Ошибка валидации: {}", e.getMessage());
 
         return ApiError.builder()
-                .errors(null)
                 .message(e.getMessage())
                 .reason("Incorrectly made request.")
                 .status(HttpStatus.BAD_REQUEST.name())
@@ -61,7 +60,6 @@ public class ErrorHandler {
         log.error("Внутренняя ошибка stat-server: {} ", e.getMessage(), e);
 
         return ApiError.builder()
-                .errors(null)
                 .message("Internal Server Error")
                 .reason("Error occurred on the server side.")
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.name())

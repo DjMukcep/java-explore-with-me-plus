@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import ru.practicum.entity.event.SortBy;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,11 +33,11 @@ public class EventPublicParamDto {
 
     private boolean onlyAvailable = false;
 
-    private String sort;
+    private SortBy sort;
 
-    @PositiveOrZero(message = "can't be negative")
+    @PositiveOrZero
     private int from = 0;
 
-    @Positive(message = "must be greater than 0")
+    @Positive
     private int size = 10;
 }

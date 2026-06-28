@@ -23,7 +23,7 @@ public class EventAdminController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<EventFullDto> getEventsByAdmin(@ModelAttribute EventAdminParamDto params) {
+    public List<EventFullDto> getEventsByAdmin(@ModelAttribute @Valid EventAdminParamDto params) {
         return eventService.getEventsByAdmin(params);
     }
 

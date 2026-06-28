@@ -2,7 +2,7 @@ package ru.practicum.entity.event;
 
 import jakarta.persistence.*;
 import lombok.*;
-import ru.practicum.entity.Location;
+import ru.practicum.dto.event.Location;
 import ru.practicum.entity.category.Category;
 import ru.practicum.entity.user.User;
 

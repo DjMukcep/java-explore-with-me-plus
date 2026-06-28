@@ -10,12 +10,10 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import ru.practicum.StatClient;
 import ru.practicum.dto.category.CategoryDto;
-import ru.practicum.dto.event.EventAdminParamDto;
-import ru.practicum.dto.event.EventFullDto;
-import ru.practicum.dto.event.NewEventDto;
-import ru.practicum.dto.event.UpdateEventAdminRequest;
+import ru.practicum.dto.event.*;
 import ru.practicum.entity.category.Category;
 import ru.practicum.entity.category.CategoryService;
+import ru.practicum.entity.request.RequestService;
 import ru.practicum.entity.user.User;
 import ru.practicum.entity.user.UserService;
 import ru.practicum.exception.ConflictException;
@@ -43,6 +41,9 @@ class EventServiceImplTest {
     @Mock
     private StatClient statClient;
 
+    @Mock
+    private RequestService requestService;
+
     @InjectMocks
     private EventServiceImpl eventService;
 
@@ -63,6 +64,7 @@ class EventServiceImplTest {
                 .state(EventState.PUBLISHED)
                 .createdOn(LocalDateTime.now())
                 .eventDate(LocalDateTime.now().plusDays(1))
+                .location(new Location(1.1f,1.1f))
                 .category(category)
                 .initiator(initiator)
                 .build();
@@ -87,12 +89,13 @@ class EventServiceImplTest {
                 .state(EventState.PENDING)
                 .eventDate(LocalDateTime.now().plusDays(1))
                 .createdOn(LocalDateTime.now())
+                .location(new Location(1.1f,1.1f))
                 .category(category)
                 .initiator(initiator)
                 .build();
 
         UpdateEventAdminRequest request = UpdateEventAdminRequest.builder()
-                .stateAction("PUBLISH_EVENT")
+                .stateAction(AdminStateAction.PUBLISH_EVENT)
                 .build();
 
         when(eventRepository.findById(1L)).thenReturn(Optional.of(event));
@@ -118,7 +121,7 @@ class EventServiceImplTest {
                 .build();
 
         UpdateEventAdminRequest request = UpdateEventAdminRequest.builder()
-                .stateAction("PUBLISH_EVENT")
+                .stateAction(AdminStateAction.PUBLISH_EVENT)
                 .build();
 
         when(eventRepository.findById(1L)).thenReturn(Optional.of(event));
@@ -150,7 +153,7 @@ class EventServiceImplTest {
                 .description("description")
                 .eventDate(futureDate)
                 .title("title")
-                .location(ru.practicum.dto.Location.builder().lat(1.0f).lon(1.0f).build())
+                .location(Location.builder().lat(1.0f).lon(1.0f).build())
                 .build();
 
         when(userService.findById(1L)).thenReturn(user);

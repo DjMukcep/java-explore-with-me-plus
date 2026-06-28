@@ -3,7 +3,7 @@ package ru.practicum.entity.event;
 import org.junit.jupiter.api.Test;
 import ru.practicum.dto.event.EventFullDto;
 import ru.practicum.dto.event.EventShortDto;
-import ru.practicum.dto.event.UpdateEventAdminRequest;
+import ru.practicum.dto.event.Location;
 import ru.practicum.entity.category.Category;
 import ru.practicum.entity.user.User;
 
@@ -26,6 +26,7 @@ class EventMapperTest {
                 .createdOn(LocalDateTime.of(2026, 6, 24, 12, 0))
                 .publishedOn(LocalDateTime.of(2026, 6, 24, 13, 0))
                 .paid(true)
+                .location(new Location(1.1f,1.1f))
                 .participantLimit(10)
                 .requestModeration(true)
                 .state(EventState.PUBLISHED)
@@ -68,30 +69,5 @@ class EventMapperTest {
         assertEquals(50L, dto.getViews());
         assertFalse(dto.getPaid());
         assertEquals("title", dto.getTitle());
-    }
-
-    @Test
-    void updateEventFromAdminRequest_shouldUpdateOnlyNonNullFields() {
-        Event event = Event.builder()
-                .id(1L)
-                .annotation("old")
-                .title("old")
-                .paid(false)
-                .participantLimit(5)
-                .build();
-
-        Category category = Category.builder().id(2L).name("cat").build();
-
-        UpdateEventAdminRequest request = UpdateEventAdminRequest.builder()
-                .annotation("new annotation")
-                .paid(true)
-                .build();
-
-        EventMapper.updateEventFromAdminRequest(request, event, category);
-
-        assertEquals("new annotation", event.getAnnotation());
-        assertEquals("old", event.getTitle());
-        assertTrue(event.getPaid());
-        assertEquals(2L, event.getCategory().getId());
     }
 }

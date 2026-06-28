@@ -62,13 +62,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findById(Long userId) {
         return userRepository.findById(userId).orElseThrow(
-                () -> new NotFoundException("User with this id does not exist"));
+                () -> new NotFoundException("User with id: " + userId + " does not exist"));
     }
 
     @Override
     public void checkUserExist(Long userId) {
         if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("User with this id does not exist");
+            throw new NotFoundException("User with id: " + userId + " does not exist");
         }
     }
 }

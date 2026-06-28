@@ -12,11 +12,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class CategoriesParamDto {
-    @PositiveOrZero(message = "can't be negative")
+    @PositiveOrZero
     @Builder.Default
     private int from = 0;
 
-    @Positive(message = "must be greater than 0")
+    @Positive
     @Builder.Default
     private int size = 10;
 }
