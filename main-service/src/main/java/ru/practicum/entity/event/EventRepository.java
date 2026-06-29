@@ -1,6 +1,7 @@
 package ru.practicum.entity.event;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 
@@ -11,6 +12,7 @@ public interface EventRepository extends JpaRepository<Event, Long>, QuerydslPre
 
     Optional<Event> findByIdAndState(Long id, EventState state);
 
+    @EntityGraph(attributePaths = {"category","initiator"})
     List<Event> findAllByInitiatorId(Long initiatorId, Pageable pageable);
 
     boolean existsByCategoryId(Long categoryId);

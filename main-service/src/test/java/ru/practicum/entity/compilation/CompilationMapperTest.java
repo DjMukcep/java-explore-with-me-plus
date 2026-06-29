@@ -2,172 +2,150 @@ package ru.practicum.entity.compilation;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-import ru.practicum.dto.category.CategoryDto;
+
 import ru.practicum.dto.compilation.CompilationDto;
+import ru.practicum.dto.compilation.LogCompilation;
 import ru.practicum.dto.compilation.NewCompilationDto;
 import ru.practicum.dto.event.EventShortDto;
-import ru.practicum.dto.user.UserShortDto;
-import ru.practicum.dto.event.Location;
+
 import ru.practicum.entity.category.Category;
 import ru.practicum.entity.event.Event;
-import ru.practicum.entity.event.EventMapper;
-import ru.practicum.entity.event.EventState;
 import ru.practicum.entity.user.User;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 
 class CompilationMapperTest {
 
-    private static final long EVENT_ID_1 = 1L;
-    private static final long EVENT_ID_2 = 2L;
-    private static final long COMPILATION_ID = 100L;
-    private static final long CATEGORY_ID = 201L;
-
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
-    private User initiator;
-    private Set<Event> eventsSet;
-    private Map<Long, Long> eventHits;
-    private Event event1;
-    private Event event2;
+    private Event event;
     private Compilation compilation;
-    private EventShortDto shortDto1;
-    private EventShortDto shortDto2;
 
     @BeforeEach
     void setUp() {
-        initiator = User.builder()
-                .name("test name")
-                .mail("test@mail.com")
-                .build();
-        UserShortDto initiatorDto = UserShortDto.builder()
-                .id(initiator.getId())
-                .name(initiator.getName())
-                .build();
-
         Category category = Category.builder()
-                .id(CATEGORY_ID)
-                .name("test category")
-                .build();
-        CategoryDto categoryDto = CategoryDto.builder()
-                .id(category.getId())
-                .name(category.getName())
-                .build();
-        Location location = Location.builder()
-                .lat(123.123f)
-                .lon(31.321f)
+                .id(1L)
+                .name("Category")
                 .build();
 
-        eventHits = new HashMap<>();
-        eventHits.put(EVENT_ID_1, 10L);
-        eventHits.put(EVENT_ID_2, 5L);
+        User initiator = User.builder()
+                .id(1L)
+                .name("Roman")
+                .build();
 
-        event1 = Event.builder()
-                .id(EVENT_ID_1)
-                .initiator(initiator)
+        event = Event.builder()
+                .id(1L)
+                .title("Title")
+                .annotation("Annotation")
                 .category(category)
-                .annotation("Annotation 1")
+                .initiator(initiator)
                 .eventDate(LocalDateTime.now())
-                .location(location)
                 .paid(false)
-                .participantLimit(10)
-                .publishedOn(LocalDateTime.now())
-                .requestModeration(true)
-                .state(EventState.PUBLISHED)
-                .title("Event 1")
-                .description("Description 1")
-                .createdOn(LocalDateTime.now())
-                .build();
-
-        event2 = Event.builder()
-                .id(EVENT_ID_2)
-                .initiator(initiator)
-                .category(category)
-                .annotation("Annotation 2")
-                .eventDate(LocalDateTime.now().plusHours(1))
-                .location(location)
-                .paid(true)
-                .participantLimit(20)
-                .publishedOn(LocalDateTime.now().plusHours(1))
-                .requestModeration(false)
-                .state(EventState.PENDING)
-                .title("Event 2")
-                .description("Description 2")
-                .createdOn(LocalDateTime.now().plusHours(1))
-                .build();
-
-        eventsSet = new HashSet<>(Arrays.asList(event1, event2));
-
-        shortDto1 = EventShortDto.builder()
-                .id(event1.getId())
-                .title(event1.getTitle())
-                .annotation(event1.getAnnotation())
-                .category(categoryDto)
-                .eventDate(event1.getEventDate().format(FORMATTER))
-                .initiator(initiatorDto)
-                .paid(event1.getPaid())
-                .views(eventHits.get(EVENT_ID_1))
-                .build();
-        shortDto2 = EventShortDto.builder()
-                .id(event2.getId())
-                .title(event2.getTitle())
-                .annotation(event2.getAnnotation())
-                .category(categoryDto)
-                .eventDate(event2.getEventDate().format(FORMATTER))
-                .initiator(initiatorDto)
-                .paid(event2.getPaid())
-                .views(eventHits.get(EVENT_ID_2))
                 .build();
 
         compilation = new Compilation();
-        compilation.setId(COMPILATION_ID);
-        compilation.setTitle("Test Compilation");
+        compilation.setId(10L);
+        compilation.setTitle("Compilation");
         compilation.setPinned(true);
-        compilation.setEvents(eventsSet);
+        compilation.setEvents(Set.of(event));
     }
 
     @Test
-    void toDto_shouldMapEntityToDtoWithCorrectHits() {
-        try (MockedStatic<EventMapper> mocked = mockStatic(EventMapper.class)) {
-            mocked.when(() -> EventMapper.toEventShortDto(eq(event1), anyLong(), eq(10L)))
-                    .thenReturn(shortDto1);
-            mocked.when(() -> EventMapper.toEventShortDto(eq(event2), anyLong(), eq(5L)))
-                            .thenReturn(shortDto2);
+    void toDto_shouldMapCompilation() {
 
-            CompilationDto result = CompilationMapper.toDto(compilation, eventHits);
+        Compilation compilation = new Compilation();
+        compilation.setId(10L);
+        compilation.setTitle("Compilation");
+        compilation.setPinned(true);
+        compilation.setEvents(Set.of(event));
 
-            assertThat(result.getId(), equalTo(COMPILATION_ID));
-            assertThat(result.getTitle(), equalTo("Test Compilation"));
-            assertThat(result.getPinned(), equalTo(true));
-            assertThat(result.getEvents(), hasSize(2));
-            assertThat(result.getEvents(), hasItems(shortDto1, shortDto2));
+        Map<Long, Long> hits = Map.of(1L, 15L);
+        Map<Long, Long> requests = Map.of(1L, 7L);
 
-            mocked.verify(() -> EventMapper.toEventShortDto(eq(event1), anyLong(), eq(10L)));
-            mocked.verify(() -> EventMapper.toEventShortDto(eq(event2), anyLong(), eq(5L)));
-        }
+        CompilationDto dto = CompilationMapper.toDto(compilation, hits, requests);
+
+        assertEquals(10L, dto.getId());
+        assertEquals("Compilation", dto.getTitle());
+        assertTrue(dto.getPinned());
+
+        assertEquals(1, dto.getEvents().size());
+
+        EventShortDto eventDto = dto.getEvents().iterator().next();
+        assertEquals(15L, eventDto.getViews());
+        assertEquals(7L, eventDto.getConfirmedRequests());
     }
 
     @Test
-    void toEntity_shouldMapDtoToEntityWithPinnedAndEvents() {
+    void toDto_shouldUseDefaultValuesWhenMapsAreEmpty() {
+
+        compilation.setEvents(Set.of(event));
+
+        CompilationDto dto = CompilationMapper.toDto(
+                compilation,
+                Map.of(),
+                Map.of()
+        );
+
+        EventShortDto eventDto = dto.getEvents().iterator().next();
+
+        assertEquals(0L, eventDto.getViews());
+        assertEquals(0L, eventDto.getConfirmedRequests());
+    }
+
+    @Test
+    void toLog_shouldMapCompilationDto() {
+        EventShortDto event = EventShortDto.builder()
+                .id(1L)
+                .build();
+
+        CompilationDto dto = CompilationDto.builder()
+                .id(5L)
+                .title("Test")
+                .pinned(false)
+                .events(Set.of(event))
+                .build();
+
+        LogCompilation log = CompilationMapper.toLog(dto);
+
+        assertEquals(5L, log.getId());
+        assertEquals("Test", log.getTitle());
+        assertFalse(log.getPinned());
+
+        assertEquals(1, log.getEvents().size());
+        assertEquals(1L, log.getEvents().iterator().next().getId());
+    }
+
+    @Test
+    void toEntity_shouldMapAllFields() {
+        Event event = Event.builder()
+                .id(1L)
+                .build();
+
         NewCompilationDto dto = new NewCompilationDto();
-        dto.setTitle("New Compilation");
+        dto.setTitle("Compilation");
         dto.setPinned(true);
-        dto.setEvents(Set.of(EVENT_ID_1, EVENT_ID_2));
+        dto.setEvents(Set.of(1L));
 
-        Compilation result = CompilationMapper.toEntity(dto, eventsSet);
+        Compilation entity = CompilationMapper.toEntity(dto, Set.of(event));
 
-        assertThat(result.getId(), nullValue());
-        assertThat(result.getTitle(), is("New Compilation"));
-        assertThat(result.getPinned(), is(true));
-        assertThat(result.getEvents(), sameInstance(eventsSet));
+        assertEquals("Compilation", entity.getTitle());
+        assertTrue(entity.getPinned());
+        assertEquals(Set.of(event), entity.getEvents());
+    }
+
+    @Test
+    void toEntity_shouldHandleNullFields() {
+        NewCompilationDto dto = new NewCompilationDto();
+        dto.setTitle("Compilation");
+
+        Compilation entity = CompilationMapper.toEntity(dto, Set.of());
+
+        assertEquals("Compilation", entity.getTitle());
+        assertFalse(entity.getPinned());
+        assertTrue(entity.getEvents().isEmpty());
     }
 
 }

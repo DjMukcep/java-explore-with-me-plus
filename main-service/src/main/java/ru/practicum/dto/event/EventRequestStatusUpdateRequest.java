@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.entity.request.RequestStatus;
 
-import java.util.List;
+import java.util.Set;
 
 
 @Data
@@ -14,6 +14,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class EventRequestStatusUpdateRequest {
-    private List<Long> requestIds;
+    private Set<Long> requestIds;
     private RequestStatus status;
 }

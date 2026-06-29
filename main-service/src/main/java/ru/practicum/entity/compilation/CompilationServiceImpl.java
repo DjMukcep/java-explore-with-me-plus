@@ -6,9 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.StatClient;
-import ru.practicum.StatsRequest;
-import ru.practicum.ViewStats;
+
 import ru.practicum.dto.compilation.CompilationDto;
 import ru.practicum.dto.compilation.CompilationsParamDto;
 import ru.practicum.dto.compilation.NewCompilationDto;
@@ -18,8 +16,6 @@ import ru.practicum.entity.event.EventService;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,10 +25,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class CompilationServiceImpl implements CompilationService {
 
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
     private final CompilationRepository compilationRepository;
-    private final StatClient statClient;
     private final EventService eventService;
 
     @Override
@@ -52,17 +45,17 @@ public class CompilationServiceImpl implements CompilationService {
             return List.of();
         }
 
-        List<Long> eventIds = compilations.stream()
-                .flatMap(compilation -> compilation.getEvents().stream())
-                .distinct()
-                .map(Event::getId)
+        List<Event> events = compilations.stream()
+                .map(Compilation::getEvents)
+                .flatMap(Collection::stream)
                 .toList();
 
-        List<ViewStats> viewStats = makeRequestToStatsService(eventIds);
-        Map<Long, Long> hitsMap = getHitsByEventIds(viewStats);
+        Map<Long, Long> hitsMap = eventService.getViewsMap(events);
+        Map<Long, Long> eventsIdRequestsCount = eventService.getEventsRequests(events);
 
         return compilations.stream()
-                .map(compilation -> CompilationMapper.toDto(compilation, hitsMap))
+                .map(compilation ->
+                        CompilationMapper.toDto(compilation, hitsMap, eventsIdRequestsCount))
                 .toList();
     }
 
@@ -70,13 +63,13 @@ public class CompilationServiceImpl implements CompilationService {
     public CompilationDto getById(Long compId) {
         Compilation compilation = getByIdWithEvents(compId);
 
-        List<Long> eventIds = compilation.getEvents().stream()
-                .map(Event::getId)
+        List<Event> events = compilation.getEvents().stream()
                 .toList();
 
-        List<ViewStats> viewStats = makeRequestToStatsService(eventIds);
-        Map<Long, Long> hitsByEventIds = getHitsByEventIds(viewStats);
-        return CompilationMapper.toDto(compilation, hitsByEventIds);
+        Map<Long, Long> hitsMap = eventService.getViewsMap(events);
+        Map<Long, Long> eventsIdRequestsCount = eventService.getEventsRequests(events);
+
+        return CompilationMapper.toDto(compilation, hitsMap, eventsIdRequestsCount);
     }
 
     @Override
@@ -91,8 +84,10 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation entity = CompilationMapper.toEntity(dto, new HashSet<>(events));
         entity = compilationRepository.save(entity);
 
-        List<ViewStats> viewStats = makeRequestToStatsService(dto.getEvents());
-        var compilationDto = CompilationMapper.toDto(entity, getHitsByEventIds(viewStats));
+        Map<Long, Long> hitsMap = eventService.getViewsMap(events);
+        Map<Long, Long> eventsIdRequestsCount = eventService.getEventsRequests(events);
+
+        var compilationDto = CompilationMapper.toDto(entity, hitsMap, eventsIdRequestsCount);
         log.info("Новая подборка событий: {}", CompilationMapper.toLog(compilationDto));
 
         return compilationDto;
@@ -101,7 +96,6 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     @Transactional
     public void delete(Long compId) {
-
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(
                 () -> new NotFoundException(String.format("Compilation with id=%d not found", compId))
         );
@@ -116,12 +110,12 @@ public class CompilationServiceImpl implements CompilationService {
 
         updateFields(compilation, request);
 
-        List<Long> ids = compilation.getEvents().stream()
-                .map(Event::getId)
+        List<Event> events = compilation.getEvents().stream()
                 .toList();
 
-        List<ViewStats> viewStats = makeRequestToStatsService(ids);
-        var compilationDto = CompilationMapper.toDto(compilation, getHitsByEventIds(viewStats));
+        Map<Long, Long> hitsMap = eventService.getViewsMap(events);
+        Map<Long, Long> eventsIdRequestsCount = eventService.getEventsRequests(events);
+        var compilationDto = CompilationMapper.toDto(compilation, hitsMap, eventsIdRequestsCount);
         log.info("Подборка событий обновлена: {}", CompilationMapper.toLog(compilationDto));
 
         return compilationDto;
@@ -131,37 +125,6 @@ public class CompilationServiceImpl implements CompilationService {
         return compilationRepository.findWithEventsById(compId).orElseThrow(
                 () -> new NotFoundException(String.format("Compilation with id=%d not found", compId))
         );
-    }
-
-    private Map<Long, Long> getHitsByEventIds(List<ViewStats> stats) {
-        Map<Long, Long> hitsMap = new HashMap<>();
-        for (ViewStats stat : stats) {
-            String uri = stat.getUri();
-            int lastSlashIndex = stat.getUri().lastIndexOf('/');
-            if (lastSlashIndex == -1 || lastSlashIndex == uri.length() - 1) {
-                continue;
-            }
-            long eventId = Long.parseLong(uri.substring(lastSlashIndex + 1));
-            hitsMap.merge(eventId, stat.getHits(), Long::sum);
-        }
-        return hitsMap;
-    }
-
-    private List<ViewStats> makeRequestToStatsService(Collection<Long> eventIds) {
-        List<String> uris = eventIds.stream()
-                .map(id -> "/events/" + id)
-                .toList();
-
-        LocalDateTime end = LocalDateTime.of(9999, 12, 31, 23, 59, 59);
-
-        StatsRequest request = new StatsRequest(
-                LocalDateTime.now().format(FORMATTER),
-                end.format(FORMATTER),
-                uris,
-                false
-        );
-
-        return statClient.getViewStats(request);
     }
 
     private void updateFields(Compilation old, UpdateCompilationRequest request) {

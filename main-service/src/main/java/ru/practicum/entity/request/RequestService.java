@@ -4,6 +4,7 @@ import ru.practicum.dto.event.EventRequestsCountDto;
 import ru.practicum.dto.request.ParticipationRequestDto;
 
 import java.util.List;
+import java.util.Set;
 
 public interface RequestService {
 
@@ -13,11 +14,11 @@ public interface RequestService {
 
     List<ParticipationRequestDto> getUserRequests(Long userId);
 
-    List<EventRequestsCountDto> countByEventIdsAndStatus(List<Long> ids, RequestStatus status);
+    List<EventRequestsCountDto> countByEventIdsAndStatus(Set<Long> ids, RequestStatus status);
 
     long countByEventIdAndStatus(Long eventId, RequestStatus status);
 
-    List<Request> findByIds(List<Long> ids);
+    List<Request> findByIdsAndEventId(Set<Long> ids, Long eventId);
 
     List<ParticipationRequestDto> getParticipationRequestsByEventId(Long eventId);
 }

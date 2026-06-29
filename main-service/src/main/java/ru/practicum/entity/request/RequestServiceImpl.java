@@ -15,6 +15,7 @@ import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -71,7 +72,7 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public List<EventRequestsCountDto> countByEventIdsAndStatus(List<Long> ids, RequestStatus status) {
+    public List<EventRequestsCountDto> countByEventIdsAndStatus(Set<Long> ids, RequestStatus status) {
         return requestRepository.countByEventIdInAndStatus(ids, status);
     }
 
@@ -81,8 +82,8 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public List<Request> findByIds(List<Long> ids) {
-        return requestRepository.findByIdIn(ids);
+    public List<Request> findByIdsAndEventId(Set<Long> ids, Long eventId) {
+        return requestRepository.findByIdInAndEventId(ids, eventId);
     }
 
     @Override

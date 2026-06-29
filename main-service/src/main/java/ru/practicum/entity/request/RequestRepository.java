@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import ru.practicum.dto.event.EventRequestsCountDto;
 
 import java.util.List;
+import java.util.Set;
 
 public interface RequestRepository extends JpaRepository<Request, Long> {
 
@@ -15,7 +16,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     List<Request> findByUserId(Long userId);
 
-    List<Request> findByIdIn(List<Long> ids);
+    List<Request> findByIdInAndEventId(Set<Long> ids, Long eventId);
 
     List<Request> findByEventId(Long eventId);
 
@@ -24,6 +25,6 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "FROM Request r " +
             "WHERE r.event.id IN :ids AND r.status = :status " +
             "GROUP BY r.event.id")
-    List<EventRequestsCountDto> countByEventIdInAndStatus(@Param("ids") List<Long> ids,
+    List<EventRequestsCountDto> countByEventIdInAndStatus(@Param("ids") Set<Long> ids,
                                                           @Param("status") RequestStatus status);
 }

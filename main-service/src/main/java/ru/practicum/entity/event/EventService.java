@@ -7,6 +7,7 @@ import ru.practicum.dto.request.ParticipationRequestDto;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public interface EventService {
     // Admin
@@ -33,4 +34,8 @@ public interface EventService {
     List<ParticipationRequestDto> getEventRequestsByCreatorId(Long userId, Long eventId);
 
     EventRequestStatusUpdateResult updateEventRequestsStatus(EventParamDto eventParamDto, EventRequestStatusUpdateRequest request);
+
+    Map<Long, Long> getEventsRequests(List<Event> events);
+
+    Map<Long, Long> getViewsMap(List<Event> events);
 }

@@ -138,10 +138,13 @@ public class EventServiceImpl implements EventService {
     public EventRequestStatusUpdateResult updateEventRequestsStatus(EventParamDto eventParamDto,
                                                                     EventRequestStatusUpdateRequest request) {
         Long userId = eventParamDto.getUserId();
-        Event event = getEvent(eventParamDto.getEventId());
+        Long eventId = eventParamDto.getEventId();
+        Event event = getEvent(eventId);
         userService.checkUserExist(userId);
         checkUserIsEventInitiator(userId, event);
-        List<Request> requests = requestService.findByIds(request.getRequestIds());
+
+        List<Request> requests = requestService.findByIdsAndEventId(request.getRequestIds(), event.getId());
+
 
         long confirmedRequests = getEventRequestsCount(event.getId());
         long remainedRequests = event.getParticipantLimit() - confirmedRequests;
@@ -240,21 +243,22 @@ public class EventServiceImpl implements EventService {
     }
 
     private void applyStateAction(Event event, AdminStateAction stateAction) {
-        LocalDateTime now = LocalDateTime.now();
-
-        if (event.getEventDate().isBefore(now.plusHours(1))) {
-            throw new ValidationException("Cannot publish the event because event date is less than 1 hour from now.");
-        }
-
         if (stateAction == null) {
             return;
         }
+
+        LocalDateTime now = LocalDateTime.now();
 
         switch (stateAction) {
             case AdminStateAction.PUBLISH_EVENT -> {
                 if (event.getState() != EventState.PENDING) {
                     throw new ConflictException("Cannot publish the event because it's not in the right state: " + event.getState());
                 }
+
+                if (event.getEventDate().isBefore(now.plusHours(1))) {
+                    throw new ConflictException("Cannot publish the event because event date is less than 1 hour from now.");
+                }
+
                 event.setState(EventState.PUBLISHED);
                 event.setPublishedOn(now);
             }
@@ -262,6 +266,7 @@ public class EventServiceImpl implements EventService {
                 if (event.getState() == EventState.PUBLISHED) {
                     throw new ConflictException("Cannot reject the event because it's already published.");
                 }
+
                 event.setState(EventState.CANCELED);
             }
             default -> throw new ConflictException("Invalid state action: " + stateAction);
@@ -329,6 +334,42 @@ public class EventServiceImpl implements EventService {
         long confirmedRequests = requestService.countByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED);
 
         return EventMapper.toEventFullDto(event, confirmedRequests, views);
+    }
+
+    @Override
+    public Map<Long, Long> getEventsRequests(List<Event> events) {
+        Set<Long> eventIds = events.stream().map(Event::getId).collect(Collectors.toSet());
+        List<EventRequestsCountDto> requests = requestService.countByEventIdsAndStatus(eventIds, RequestStatus.CONFIRMED);
+
+        return requests.stream()
+                .collect(Collectors.toMap(EventRequestsCountDto::eventId, EventRequestsCountDto::count));
+    }
+
+    @Override
+    public Map<Long, Long> getViewsMap(List<Event> events) {
+        if (events.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        LocalDateTime start = events.stream()
+                .map(Event::getCreatedOn)
+                .filter(Objects::nonNull)
+                .min(LocalDateTime::compareTo)
+                .orElse(LocalDateTime.now().minusYears(1));
+
+        List<String> uris = events.stream()
+                .map(event -> "/events/" + event.getId())
+                .toList();
+
+        List<ViewStats> stats = statClient.getViewStats(new StatsRequest(
+                start.format(formatter),
+                LocalDateTime.now().plusYears(1).format(formatter),
+                uris, true));
+
+        return stats.stream()
+                .collect(Collectors.toMap(
+                        vs -> Long.parseLong(vs.getUri().substring("/events/".length())),
+                        ViewStats::getHits));
     }
 
     // ---------- QueryDSL predicates ----------
@@ -407,32 +448,6 @@ public class EventServiceImpl implements EventService {
         log.info("На сервер статистики отправлен endpointHit: {}", endpointHit);
     }
 
-    private Map<Long, Long> getViewsMap(List<Event> events) {
-        if (events.isEmpty()) {
-            return Collections.emptyMap();
-        }
-
-        LocalDateTime start = events.stream()
-                .map(Event::getCreatedOn)
-                .filter(Objects::nonNull)
-                .min(LocalDateTime::compareTo)
-                .orElse(LocalDateTime.now().minusYears(1));
-
-        List<String> uris = events.stream()
-                .map(event -> "/events/" + event.getId())
-                .toList();
-
-        List<ViewStats> stats = statClient.getViewStats(new StatsRequest(
-                start.format(formatter),
-                LocalDateTime.now().plusYears(1).format(formatter),
-                uris, true));
-
-        return stats.stream()
-                .collect(Collectors.toMap(
-                        vs -> Long.parseLong(vs.getUri().substring("/events/".length())),
-                        ViewStats::getHits));
-    }
-
     private Event getEvent(Long eventId) {
         return eventRepository.findById(eventId).orElseThrow(
                 () -> new NotFoundException("Event with id " + eventId + " not found")
@@ -465,6 +480,17 @@ public class EventServiceImpl implements EventService {
     }
 
     public void updateEventFromAdminRequest(UpdateEventAdminRequest request, Event event) {
+        if (request.getEventDate() != null &&
+                request.getEventDate().isBefore(LocalDateTime.now())) {
+            throw new ValidationException("Event date cannot be in the past");
+        }
+
+        if (request.getCategory() != null) {
+            CategoryDto categoryDto = categoryService.findById(request.getCategory());
+            Category category = CategoryMapper.toEntity(categoryDto);
+            event.setCategory(category);
+        }
+
         ofNullable(request.getAnnotation()).ifPresent(event::setAnnotation);
         ofNullable(request.getDescription()).ifPresent(event::setDescription);
         ofNullable(request.getEventDate()).ifPresent(event::setEventDate);
@@ -473,12 +499,6 @@ public class EventServiceImpl implements EventService {
         ofNullable(request.getParticipantLimit()).ifPresent(event::setParticipantLimit);
         ofNullable(request.getRequestModeration()).ifPresent(event::setRequestModeration);
         ofNullable(request.getTitle()).ifPresent(event::setTitle);
-
-        if (request.getCategory() != null) {
-            CategoryDto categoryDto = categoryService.findById(request.getCategory());
-            Category category = CategoryMapper.toEntity(categoryDto);
-            event.setCategory(category);
-        }
     }
 
     private void checkUserIsEventInitiator(Long userId, Event event) {
@@ -497,14 +517,6 @@ public class EventServiceImpl implements EventService {
             throw new ValidationException("Event date must be at least two hours in the future.");
 
         }
-    }
-
-    private Map<Long, Long> getEventsRequests(List<Event> events) {
-        List<Long> eventIds = events.stream().map(Event::getId).toList();
-        List<EventRequestsCountDto> requests = requestService.countByEventIdsAndStatus(eventIds, RequestStatus.CONFIRMED);
-
-        return requests.stream()
-                .collect(Collectors.toMap(EventRequestsCountDto::eventId, EventRequestsCountDto::count));
     }
 
     private long getEventRequestsCount(Long eventId) {
