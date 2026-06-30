@@ -98,7 +98,7 @@ class EventServiceImplTest {
                 .stateAction(AdminStateAction.PUBLISH_EVENT)
                 .build();
 
-        when(eventRepository.findById(1L)).thenReturn(Optional.of(event));
+        when(eventRepository.findWithRelationsById(1L)).thenReturn(Optional.of(event));
         when(statClient.getViewStats(any())).thenReturn(Collections.emptyList());
 
         EventFullDto result = eventService.updateEventByAdmin(1L, request);
@@ -124,7 +124,7 @@ class EventServiceImplTest {
                 .stateAction(AdminStateAction.PUBLISH_EVENT)
                 .build();
 
-        when(eventRepository.findById(1L)).thenReturn(Optional.of(event));
+        when(eventRepository.findWithRelationsById(1L)).thenReturn(Optional.of(event));
 
         assertThrows(ConflictException.class,
                 () -> eventService.updateEventByAdmin(1L, request));

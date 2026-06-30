@@ -449,7 +449,7 @@ public class EventServiceImpl implements EventService {
     }
 
     private Event getEvent(Long eventId) {
-        return eventRepository.findById(eventId).orElseThrow(
+        return eventRepository.findWithRelationsById(eventId).orElseThrow(
                 () -> new NotFoundException("Event with id " + eventId + " not found")
         );
     }
