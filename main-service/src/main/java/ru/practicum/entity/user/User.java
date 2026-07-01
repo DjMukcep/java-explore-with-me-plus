@@ -3,6 +3,8 @@ package ru.practicum.entity.user;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -22,6 +24,16 @@ public class User {
 
     @Column(nullable = false)
     private String name;
+
+    @Enumerated(EnumType.STRING)
+    private CommentsRank rank;
+
+    @Builder.Default
+    @Column(name = "admin_warn", nullable = false)
+    private Integer adminWarnings = 0;
+
+    @Column(name = "banned_until")
+    private LocalDateTime bannedUntil;
 
     @Override
     public boolean equals(final Object o) {
