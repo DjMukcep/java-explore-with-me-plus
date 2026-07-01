@@ -16,15 +16,15 @@ public class EndpointHit {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
 
-    @NotBlank(message = "can't be empty")
+    @NotBlank
     private String app;
 
-    @NotBlank(message = "can't be empty")
+    @NotBlank
     private String uri;
 
-    @NotBlank(message = "can't be empty")
+    @NotBlank
     private String ip;
 
-    @NotBlank(message = "can't be empty")
+    @NotBlank
     private String timestamp;
 }

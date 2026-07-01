@@ -24,11 +24,6 @@ public class StatMapper {
             throw new ValidationException("Invalid time format: " + endpointHit.getTimestamp());
         }
 
-
-        if (time.isAfter(LocalDateTime.now())) {
-            throw new ValidationException("time of visit can't be in the future");
-        }
-
         return EndpointHitEntity.builder()
                 .app(endpointHit.getApp())
                 .uri(endpointHit.getUri())

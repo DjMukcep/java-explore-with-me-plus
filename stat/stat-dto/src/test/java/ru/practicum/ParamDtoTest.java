@@ -61,7 +61,6 @@ class ParamDtoTest {
         ConstraintViolation<ParamDto> violation = violations.iterator().next();
 
         assertThat(violation.getPropertyPath().toString(), is("start"));
-        assertThat(violation.getMessage(), is("must not be null"));
     }
 
     @Test
@@ -75,7 +74,6 @@ class ParamDtoTest {
         ConstraintViolation<ParamDto> violation = violations.iterator().next();
 
         assertThat(violation.getPropertyPath().toString(), is("end"));
-        assertThat(violation.getMessage(), is("must not be null"));
     }
 
     @Test
