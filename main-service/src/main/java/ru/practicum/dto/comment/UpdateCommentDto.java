@@ -11,4 +11,7 @@ import lombok.NoArgsConstructor;
 public class UpdateCommentDto {
     @Size(max = 2000)
     private String text;
+
+    private Long userId;
+    private Long commentId;
 }

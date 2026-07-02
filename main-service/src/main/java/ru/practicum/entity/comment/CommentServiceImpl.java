@@ -4,9 +4,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.dto.comment.CommentDto;
+import ru.practicum.dto.comment.NewCommentDto;
+import ru.practicum.dto.comment.UpdateCommentDto;
+import ru.practicum.entity.event.Event;
 import ru.practicum.entity.event.EventService;
+import ru.practicum.entity.event.EventState;
+import ru.practicum.entity.user.CommentsRank;
+import ru.practicum.entity.user.User;
 import ru.practicum.entity.user.UserService;
+import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -20,9 +31,83 @@ public class CommentServiceImpl implements CommentService {
 
 
     @Override
-    public Comment getById(Long id) {
-        return commentRepository.findByIdWithAuthor(id).orElseThrow(
+    @Transactional
+    public CommentDto createComment(NewCommentDto newCommentDto, Long userId) {
+        User user = userService.findById(userId);
+        banCheck(user);
+        Event event = eventService.findEventByIdAndState(newCommentDto.getEventId(), EventState.PUBLISHED);
+
+        user.setCommentsCount(user.getCommentsCount() + 1);
+        setUserRank(user);
+
+        Comment comment = commentRepository.save(CommentMapper.toComment(newCommentDto, user, event));
+        CommentDto commentDto = CommentMapper.toCommentDto(comment);
+
+        log.info("Новый комментарий на событие: {}", CommentMapper.toLogComment(commentDto));
+
+        return commentDto;
+    }
+
+    @Override
+    @Transactional
+    public CommentDto updateComment(UpdateCommentDto updateCommentDto) {
+        Comment comment = getById(updateCommentDto.getCommentId());
+        User user = userService.findById(updateCommentDto.getUserId());
+
+        checkAuthor(comment, updateCommentDto.getUserId());
+        banCheck(user);
+
+        comment.setText(updateCommentDto.getText());
+        CommentDto commentDto = CommentMapper.toCommentDto(comment);
+        log.info("Обновлен комментарий на событие: {}", CommentMapper.toLogComment(commentDto));
+
+        return commentDto;
+    }
+
+    @Override
+    @Transactional
+    public void deleteComment(Long commentId, Long userId) {
+        Comment comment = getById(commentId);
+        checkAuthor(comment, userId);
+        commentRepository.delete(comment);
+        log.info("Комментарий id: {} удален пользователем id: {}", commentId, userId);
+    }
+
+    @Override
+    public List<CommentDto> getComments(Long userId) {
+        return CommentMapper.toCommentDto(commentRepository.findAllByAuthorId(userId));
+    }
+
+    private Comment getById(Long id) {
+        return commentRepository.findWithAuthorById(id).orElseThrow(
                 () -> new NotFoundException("Comment not found with id: " + id)
         );
+    }
+
+    private void banCheck(User user) {
+        LocalDateTime bannedUntil = user.getBannedUntil();
+        if (bannedUntil != null && bannedUntil.isBefore(LocalDateTime.now())) {
+            user.setBannedUntil(null);
+        }
+
+        if (bannedUntil != null && bannedUntil.isAfter(LocalDateTime.now())) {
+            throw new ConflictException("You have been banned!");
+        }
+    }
+
+    private void checkAuthor(Comment comment, Long userId) {
+        if (!comment.getAuthor().getId().equals(userId)) {
+            throw new ConflictException("It's not your own comment!");
+        }
+    }
+
+    private void setUserRank(User user) {
+        if (user.getCommentsCount() == 2) {
+            user.setRank(CommentsRank.REGULAR);
+        }
+
+        if (user.getCommentsCount() > 2 && user.getRank() == CommentsRank.REGULAR) {
+            user.setRank(CommentsRank.VETERAN);
+        }
     }
 }

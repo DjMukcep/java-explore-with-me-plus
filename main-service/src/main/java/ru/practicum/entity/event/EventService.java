@@ -38,4 +38,6 @@ public interface EventService {
     Map<Long, Long> getEventsRequests(List<Event> events);
 
     Map<Long, Long> getViewsMap(List<Event> events);
+
+    Event findEventByIdAndState(Long id, EventState state);
 }
