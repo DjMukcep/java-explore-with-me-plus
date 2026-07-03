@@ -777,55 +777,65 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": ""
+      "value": "http://localhost:8080"
     },
     {
       "key": "new_comment_dto",
-      "value": ""
+      "value": "{\n\"text\": \"some_text\",\n\"eventId\": 1\n}"
     },
     {
       "key": "update_comment_dto",
-      "value": ""
+      "value": "{\n\"text\": \"new_text\"\n}"
     },
     {
       "key": "response",
-      "value": ""
+      "value": "[object Object]"
     },
     {
       "key": "responseArr",
-      "value": ""
+      "value": [
+        {
+          "id": 3,
+          "text": "Try to synthesize the SMS program, maybe it will reboot the back-end capacitor!",
+          "authorId": 3,
+          "eventId": 3,
+          "authorName": "Leonard Kuhlman",
+          "created": "2026-07-02 23:29:18",
+          "updated": "2026-07-02 23:29:18"
+        }
+      ]
     },
     {
       "key": "source",
-      "value": ""
+      "value": "[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
     },
     {
       "key": "commentId",
-      "value": ""
+      "value": 3
     },
     {
       "key": "eventId",
-      "value": ""
+      "value": 1
     },
     {
       "key": "catId",
-      "value": ""
+      "value": 1
     },
     {
       "key": "expectedCommentId1",
-      "value": ""
+      "value": 4
     },
     {
       "key": "expectedCommentId2",
-      "value": ""
+      "value": 5
     },
     {
       "key": "foreignCommentId",
-      "value": ""
+      "value": 6
     },
     {
       "key": "uid",
-      "value": ""
+      "value": 4
     }
   ]
 }
