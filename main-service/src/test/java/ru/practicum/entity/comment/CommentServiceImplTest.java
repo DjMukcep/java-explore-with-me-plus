@@ -26,7 +26,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 
-
 @ExtendWith(MockitoExtension.class)
 class CommentServiceImplTest {
 
