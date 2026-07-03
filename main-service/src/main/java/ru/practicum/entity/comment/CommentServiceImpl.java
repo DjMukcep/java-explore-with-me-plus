@@ -78,6 +78,21 @@ public class CommentServiceImpl implements CommentService {
         return CommentMapper.toCommentDto(commentRepository.findAllByAuthorId(userId));
     }
 
+    @Override
+    public List<CommentDto> getEventComments(Long eventId) {
+        return CommentMapper.toCommentDto(commentRepository.findAllByEventId(eventId));
+    }
+
+    @Override
+    public CommentDto getComment(Long commentId) {
+        return CommentMapper.toCommentDto(getById(commentId));
+    }
+
+    @Override
+    public List<CommentDto> searchComments(String text) {
+        return CommentMapper.toCommentDto(commentRepository.findAllByTextContainsIgnoreCase(text));
+    }
+
     private Comment getById(Long id) {
         return commentRepository.findWithAuthorById(id).orElseThrow(
                 () -> new NotFoundException("Comment not found with id: " + id)

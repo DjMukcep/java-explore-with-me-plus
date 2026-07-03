@@ -15,4 +15,10 @@ public interface CommentService {
     void deleteComment(Long commentId, Long userId);
 
     List<CommentDto> getComments(Long userId);
+
+    List<CommentDto> getEventComments(Long eventId);
+
+    CommentDto getComment(Long commentId);
+
+    List<CommentDto> searchComments(String text);
 }
