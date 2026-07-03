@@ -282,53 +282,6 @@ class CommentServiceImplTest {
     }
 
     @Test
-    void updateUserBan_whenUserNotBannedAndBanDateNotNull_thenBanUser() {
-        LocalDateTime banDate = LocalDateTime.now().plusMonths(3);
-
-        Mockito.when(userService.findById(testUser.getId())).thenReturn(testUser);
-
-        UserCommentAdminDto result = commentService.updateUserBan(testUser.getId(), banDate);
-
-        assertEquals(FORMATTER.format(banDate), result.getBannedUntil());
-    }
-
-    @Test
-    void updateUserBan_whenUserBannedAndBanDateIsNull_thenUnbanUser() {
-        LocalDateTime banDate = LocalDateTime.now().plusMonths(3);
-        testUser.setBannedUntil(banDate);
-        Mockito.when(userService.findById(testUser.getId())).thenReturn(testUser);
-
-        UserCommentAdminDto result = commentService.updateUserBan(testUser.getId(), null);
-
-        assertNull(result.getBannedUntil());
-    }
-
-    @Test
-    void updateUserBan_whenUserAlreadyBannedAndBanDateNotNull_thenThrowConflictException() {
-        String expectedMessage = "User already banned";
-        testUser.setBannedUntil(LocalDateTime.now().plusMonths(7));
-        LocalDateTime banDate = LocalDateTime.now().plusMonths(3);
-
-        Mockito.when(userService.findById(testUser.getId())).thenReturn(testUser);
-
-        ConflictException exception = assertThrows(ConflictException.class,
-                () -> commentService.updateUserBan(testUser.getId(), banDate));
-
-        assertEquals(expectedMessage, exception.getMessage());
-    }
-
-    @Test
-    void updateUserBan_whenUserNotBannedAndBanDateIsNull_thenThrowConflictException() {
-        String expectedMessage = "User not banned";
-        Mockito.when(userService.findById(testUser.getId())).thenReturn(testUser);
-
-        ConflictException exception = assertThrows(ConflictException.class,
-                () -> commentService.updateUserBan(testUser.getId(), null));
-
-        assertEquals(expectedMessage, exception.getMessage());
-    }
-
-    @Test
     void adminDelete_whenValid_thenCallsDelete() {
         Mockito.when(commentRepository.findWithAuthorById(testComment.getId())).thenReturn(Optional.of(testComment));
 

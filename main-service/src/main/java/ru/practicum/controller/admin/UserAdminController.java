@@ -1,16 +1,20 @@
 package ru.practicum.controller.admin;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.dto.comment.UserCommentAdminDto;
 import ru.practicum.dto.user.NewUserRequest;
 import ru.practicum.dto.user.UserDto;
 import ru.practicum.dto.user.UserParamDto;
 import ru.practicum.entity.user.UserService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -21,6 +25,8 @@ import java.util.List;
 public class UserAdminController {
 
     private final UserService userService;
+
+    private static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -38,5 +44,12 @@ public class UserAdminController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeUser(@PathVariable @Positive Long userId) {
         userService.deleteUserById(userId);
+    }
+
+    @PatchMapping("/{userId}")
+    public UserCommentAdminDto updateUserBan(@PathVariable @Positive Long userId,
+                                             @RequestParam(required = false) @DateTimeFormat(pattern = DATE_TIME_PATTERN) @Future LocalDateTime banDate) {
+
+        return userService.updateUserBan(userId, banDate);
     }
 }

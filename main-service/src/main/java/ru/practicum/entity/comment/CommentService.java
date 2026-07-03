@@ -6,7 +6,6 @@ import ru.practicum.dto.comment.UpdateCommentDto;
 import ru.practicum.dto.comment.UserCommentAdminDto;
 
 import java.util.List;
-import java.time.LocalDateTime;
 
 public interface CommentService {
 
@@ -21,8 +20,6 @@ public interface CommentService {
     UserCommentAdminDto giveWarning(Long commentId);
 
     Comment getById(Long id);
-
-    UserCommentAdminDto updateUserBan(Long userId, LocalDateTime banDate);
 
     void adminDelete(Long commentId);
 }

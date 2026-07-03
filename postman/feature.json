@@ -864,13 +864,12 @@
             "method": "PATCH",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/admin/comments/users/{{uid}}?banDate={{banDate}}",
+              "raw": "{{baseUrl}}/admin/users/{{uid}}?banDate={{banDate}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "admin",
-                "comments",
                 "users",
                 "{{uid}}"
               ],
@@ -966,13 +965,12 @@
             "method": "PATCH",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/admin/comments/users/{{uid}}",
+              "raw": "{{baseUrl}}/admin/users/{{uid}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "admin",
-                "comments",
                 "users",
                 "{{uid}}"
               ]
@@ -1180,11 +1178,11 @@
           "    }",
           "",
           "    async unbanUser(userId, verbose = null) {",
-          "        return this.patch(`/admin/comments/users/${userId}`, null, \"Ошибка при разбане пользователя\", verbose)",
+          "        return this.patch(`/admin/users/${userId}`, null, \"Ошибка при разбане пользователя\", verbose)",
           "    }",
           "",
           "    async banUser(userId, banDate, verbose = null) {",
-          "        return this.patch(`/admin/comments/users/${userId}?banDate=${banDate}`, null, \"Ошибка при бане пользователя\", verbose)",
+          "        return this.patch(`/admin/users/${userId}?banDate=${banDate}`, null, \"Ошибка при бане пользователя\", verbose)",
           "    }",
           "    ",
           "    async sendRequest(method, path, body=null, errorText = \"Ошибка при выполнении запроса: \", verbose=null) {",

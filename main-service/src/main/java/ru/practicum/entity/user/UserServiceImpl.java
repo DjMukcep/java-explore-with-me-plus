@@ -5,12 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.dto.comment.UserCommentAdminDto;
 import ru.practicum.dto.user.NewUserRequest;
 import ru.practicum.dto.user.UserDto;
 import ru.practicum.dto.user.UserParamDto;
+import ru.practicum.entity.comment.CommentMapper;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -67,5 +70,29 @@ public class UserServiceImpl implements UserService {
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException("User with id: " + userId + " does not exist");
         }
+    }
+
+    @Override
+    @Transactional
+    public UserCommentAdminDto updateUserBan(Long userId, LocalDateTime banDate) {
+        User user = findById(userId);
+
+        if (banDate != null) {
+            if (user.getBannedUntil() != null && user.getBannedUntil().isAfter(LocalDateTime.now())) {
+                throw new ConflictException("User already banned");
+            }
+
+            log.info("Пользователь получил блокировку до {}: {}", banDate,  user);
+            user.setBannedUntil(banDate);
+        } else {
+            if (user.getBannedUntil() == null || user.getBannedUntil().isBefore(LocalDateTime.now())) {
+                throw new ConflictException("User not banned");
+            }
+
+            log.info("Пользователь разблокирован:{}", user);
+            user.setBannedUntil(null);
+        }
+
+        return CommentMapper.toUserCommentAdminDto(user);
     }
 }
