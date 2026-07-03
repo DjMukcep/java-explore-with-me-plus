@@ -2,6 +2,7 @@ package ru.practicum.entity.comment;
 
 import lombok.experimental.UtilityClass;
 import ru.practicum.dto.comment.CommentDto;
+import ru.practicum.dto.comment.LogComment;
 import ru.practicum.dto.comment.NewCommentDto;
 import ru.practicum.dto.comment.UserCommentAdminDto;
 import ru.practicum.entity.user.User;
@@ -38,5 +39,24 @@ public class CommentMapper {
                 .adminWarnCount(user.getAdminWarnings())
                 .bannedUntil(user.getBannedUntil().format(formatter))
                 .build();
+    }
+
+    public static LogComment toLogComment(CommentDto comment) {
+        return LogComment.builder()
+                .id(comment.getId())
+                .authorId(comment.getAuthorId())
+                .eventId(comment.getEventId())
+                .authorName(comment.getAuthorName())
+                .text(stringBuilder(comment.getText()))
+                .created(comment.getCreated())
+                .updated(comment.getUpdated())
+                .build();
+    }
+
+    private static String stringBuilder(String string) {
+        if (string == null) {
+            return null;
+        }
+        return string.length() > 10 ? string.substring(0, 10) + "..." : string;
     }
 }
