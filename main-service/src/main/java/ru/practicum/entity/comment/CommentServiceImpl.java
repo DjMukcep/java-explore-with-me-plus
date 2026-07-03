@@ -142,9 +142,10 @@ public class CommentServiceImpl implements CommentService {
         commentRepository.delete(comment);
     }
 
-    private Comment getById(Long id) {
+    @Override
+    public Comment getById(Long id) {
         return commentRepository.findWithAuthorById(id).orElseThrow(
-                () -> new NotFoundException("Comment not found with id: " + id)
+                () -> new NotFoundException("Comment not found comment with id: " + id)
         );
     }
 

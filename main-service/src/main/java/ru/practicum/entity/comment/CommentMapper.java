@@ -48,7 +48,7 @@ public class CommentMapper {
                 .authorId(user.getId())
                 .authorName(user.getName())
                 .adminWarnCount(user.getAdminWarnings())
-                .bannedUntil(user.getBannedUntil().format(formatter))
+                .bannedUntil(user.getBannedUntil() != null ? user.getBannedUntil().format(formatter) : null)
                 .build();
     }
 
