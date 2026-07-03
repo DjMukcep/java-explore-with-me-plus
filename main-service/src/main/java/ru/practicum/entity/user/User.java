@@ -29,6 +29,10 @@ public class User {
     private CommentsRank rank;
 
     @Builder.Default
+    @Column(name = "comments_count", nullable = false)
+    private int commentsCount = 0;
+
+    @Builder.Default
     @Column(name = "admin_warn", nullable = false)
     private Integer adminWarnings = 0;
 
