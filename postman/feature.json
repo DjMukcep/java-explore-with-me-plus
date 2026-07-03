@@ -317,7 +317,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{{new_comment_dto}}",
+          "raw": "{\n  \"text\": \"some_text\",\n  \"eventId\": {{eventId}}\n}\n",
           "options": {
             "raw": {
               "language": "json"
@@ -953,10 +953,6 @@
     {
       "key": "baseUrl",
       "value": "http://localhost:8080"
-    },
-    {
-      "key": "new_comment_dto",
-      "value": "{\n\"text\": \"some_text\",\n\"eventId\": 1\n}"
     },
     {
       "key": "update_comment_dto",
