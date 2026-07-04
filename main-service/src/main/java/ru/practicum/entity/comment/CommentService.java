@@ -3,6 +3,7 @@ package ru.practicum.entity.comment;
 import ru.practicum.dto.comment.CommentDto;
 import ru.practicum.dto.comment.NewCommentDto;
 import ru.practicum.dto.comment.UpdateCommentDto;
+import ru.practicum.dto.comment.UserCommentAdminDto;
 
 import java.util.List;
 
@@ -21,4 +22,10 @@ public interface CommentService {
     CommentDto getComment(Long commentId);
 
     List<CommentDto> searchComments(String text);
+
+    UserCommentAdminDto giveWarning(Long commentId);
+
+    Comment getById(Long id);
+
+    void adminDelete(Long commentId);
 }

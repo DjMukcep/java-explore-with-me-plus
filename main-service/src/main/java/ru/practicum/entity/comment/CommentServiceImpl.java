@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.comment.CommentDto;
 import ru.practicum.dto.comment.NewCommentDto;
+import ru.practicum.dto.comment.UserCommentAdminDto;
 import ru.practicum.dto.comment.UpdateCommentDto;
 import ru.practicum.entity.event.Event;
 import ru.practicum.entity.event.EventService;
@@ -79,6 +80,26 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional
+    public UserCommentAdminDto giveWarning(Long commentId) {
+        Comment comment = getById(commentId);
+        User author = comment.getAuthor();
+
+        giveWarningForComment(comment);
+
+        return author.isWarningsLimitExceeded() ? banToWarningLimitExceeded(author) : incrementWarningCount(author);
+    }
+
+    @Override
+    @Transactional
+    public void adminDelete(Long commentId) {
+        Comment comment = getById(commentId);
+        CommentDto dto = CommentMapper.toCommentDto(comment);
+        log.info("Комментарий удален администратором: {}", CommentMapper.toLogComment(dto));
+        commentRepository.delete(comment);
+    }
+
+    @Override
     public List<CommentDto> getEventComments(Long eventId) {
         return CommentMapper.toCommentDto(commentRepository.findAllByEventId(eventId));
     }
@@ -93,7 +114,8 @@ public class CommentServiceImpl implements CommentService {
         return CommentMapper.toCommentDto(commentRepository.findAllByTextContainsIgnoreCase(text));
     }
 
-    private Comment getById(Long id) {
+    @Override
+    public Comment getById(Long id) {
         return commentRepository.findWithAuthorById(id).orElseThrow(
                 () -> new NotFoundException("Comment not found with id: " + id)
         );
@@ -105,7 +127,7 @@ public class CommentServiceImpl implements CommentService {
             user.setBannedUntil(null);
         }
 
-        if (bannedUntil != null && bannedUntil.isAfter(LocalDateTime.now())) {
+        if (user.isBanned()) {
             throw new ConflictException("You have been banned!");
         }
     }
@@ -124,5 +146,29 @@ public class CommentServiceImpl implements CommentService {
         if (user.getCommentsCount() > 2 && user.getRank() == CommentsRank.REGULAR) {
             user.setRank(CommentsRank.VETERAN);
         }
+    }
+
+    private void giveWarningForComment(Comment comment) {
+        User author = comment.getAuthor();
+        if (comment.isAdminWarning()) {
+            throw new ConflictException(
+                    String.format("User with id %s already received warning for comment with id %s", author.getId(), comment.getId())
+            );
+        }
+        comment.setAdminWarning(true);
+    }
+
+    private UserCommentAdminDto incrementWarningCount(User author) {
+        log.info("Пользователь получил предупреждение: {}", author);
+        author.setAdminWarnings(author.getAdminWarnings() + 1);
+        return CommentMapper.toUserCommentAdminDto(author);
+    }
+
+    private UserCommentAdminDto banToWarningLimitExceeded(User author) {
+        banCheck(author);
+        log.info("Пользователь заблокирован из-за превышения лимита предупреждений: {}", author);
+        author.setAdminWarnings(0);
+        author.setBannedUntil(LocalDateTime.now().plusMonths(6));
+        return CommentMapper.toUserCommentAdminDto(author);
     }
 }

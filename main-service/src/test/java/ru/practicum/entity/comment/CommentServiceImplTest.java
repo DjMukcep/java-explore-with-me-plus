@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.practicum.dto.comment.CommentDto;
 import ru.practicum.dto.comment.NewCommentDto;
 import ru.practicum.dto.comment.UpdateCommentDto;
+import ru.practicum.dto.comment.UserCommentAdminDto;
 import ru.practicum.entity.event.Event;
 import ru.practicum.entity.event.EventService;
 import ru.practicum.entity.event.EventState;
@@ -20,12 +21,12 @@ import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceImplTest {
@@ -40,8 +41,11 @@ class CommentServiceImplTest {
     @InjectMocks
     private CommentServiceImpl commentService;
 
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     private User testUser;
     private Event testEvent;
+    private Comment testComment;
 
     @BeforeEach
     void setUp() {
@@ -50,10 +54,19 @@ class CommentServiceImplTest {
         testUser.setCommentsCount(0);
         testUser.setRank(CommentsRank.NOVICE);
         testUser.setBannedUntil(null);
+        testUser.setAdminWarnings(0);
 
         testEvent = new Event();
         testEvent.setId(10L);
         testEvent.setState(EventState.PUBLISHED);
+
+        testComment = new Comment();
+        testComment.setId(20L);
+        testComment.setAdminWarning(false);
+        testComment.setAuthor(testUser);
+        testComment.setEvent(testEvent);
+        testComment.setCreated(LocalDateTime.now().minusDays(10));
+        testComment.setUpdated(null);
     }
 
     @Test
@@ -213,5 +226,74 @@ class CommentServiceImplTest {
         assertEquals(2, result.size());
         assertEquals("Текст 1", result.get(0).getText());
         assertEquals("Текст 2", result.get(1).getText());
+    }
+
+    @Test
+    void incrementWarning_whenUserNotExceededWarningsLimitAndCommentNotReceivedWarning_Count_thenIncreaseWarningsCount() {
+        Mockito.when(commentRepository.findWithAuthorById(20L)).thenReturn(Optional.of(testComment));
+
+        UserCommentAdminDto result = commentService.giveWarning(testComment.getId());
+
+        assertEquals(testUser.getId(), result.getAuthorId());
+        assertEquals(1, result.getAdminWarnCount());
+        assertTrue(testComment.isAdminWarning());
+    }
+
+    @Test
+    void incrementWarning_whenCommentAlreadyReceivedWarning_Count_thenThrowConflictException() {
+        String expectedMessage = String.format("User with id %s already received warning for comment with id %s",
+                testUser.getId(), testComment.getId());
+
+        testComment.setAdminWarning(true);
+        Mockito.when(commentRepository.findWithAuthorById(20L)).thenReturn(Optional.of(testComment));
+
+        ConflictException exception = assertThrows(ConflictException.class,
+                () -> commentService.giveWarning(testComment.getId()));
+
+        assertEquals(expectedMessage, exception.getMessage());
+    }
+
+    @Test
+    void incrementWarning_Count_whenUserExceededWarningsLimit_thenBanUserFor6Months() {
+        LocalDateTime expectedBanDate = LocalDateTime.now().plusMonths(6);
+        testUser.setAdminWarnings(2);
+        Mockito.when(commentRepository.findWithAuthorById(20L)).thenReturn(Optional.of(testComment));
+
+        UserCommentAdminDto result = commentService.giveWarning(testComment.getId());
+
+        assertEquals(0, result.getAdminWarnCount());
+        var banDate = LocalDateTime.parse(result.getBannedUntil(), FORMATTER);
+        assertEquals(expectedBanDate.getYear(), banDate.getYear());
+        assertEquals(expectedBanDate.getMonth(), banDate.getMonth());
+        assertEquals(expectedBanDate.getDayOfYear(), banDate.getDayOfYear());
+    }
+
+    @Test
+    void incrementWarning_Count_whenUserExceededWarningsLimitAndUserAlreadyBanned_thenThrowConflictException() {
+        String expectedMessage = "You have been banned!";
+        testUser.setAdminWarnings(2);
+        testUser.setBannedUntil(LocalDateTime.now().plusMonths(3));
+        Mockito.when(commentRepository.findWithAuthorById(20L)).thenReturn(Optional.of(testComment));
+
+        ConflictException exception = assertThrows(ConflictException.class,
+                () -> commentService.giveWarning(testComment.getId()));
+
+        assertEquals(expectedMessage, exception.getMessage());
+    }
+
+    @Test
+    void adminDelete_whenValid_thenCallsDelete() {
+        Mockito.when(commentRepository.findWithAuthorById(testComment.getId())).thenReturn(Optional.of(testComment));
+
+        assertDoesNotThrow(() -> commentService.adminDelete(testComment.getId()));
+
+        Mockito.verify(commentRepository, Mockito.times(1)).delete(testComment);
+    }
+
+    @Test
+    void adminDelete_whenCommentNotFound_thenThrowsNotFoundException() {
+        Mockito.when(commentRepository.findWithAuthorById(testComment.getId())).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> commentService.adminDelete(testComment.getId()));
     }
 }

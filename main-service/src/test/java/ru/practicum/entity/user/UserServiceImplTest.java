@@ -4,21 +4,25 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import ru.practicum.dto.comment.UserCommentAdminDto;
 import ru.practicum.dto.user.NewUserRequest;
 import ru.practicum.dto.user.UserDto;
 import ru.practicum.dto.user.UserParamDto;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,7 +34,7 @@ class UserServiceImplTest {
     @InjectMocks
     private UserServiceImpl userService;
 
-
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Test
     void saveUser_shouldSaveUser() {
@@ -139,5 +143,75 @@ class UserServiceImplTest {
         );
 
         verify(userRepository, never()).deleteById(anyLong());
+    }
+
+    @Test
+    void updateUserBan_whenUserNotBannedAndBanDateNotNull_thenBanUser() {
+        LocalDateTime banDate = LocalDateTime.now().plusMonths(3);
+
+        var testUser = new User();
+        testUser.setId(1L);
+        testUser.setCommentsCount(0);
+        testUser.setRank(CommentsRank.NOVICE);
+        testUser.setBannedUntil(null);
+        testUser.setAdminWarnings(0);
+
+        Mockito.when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
+
+        UserCommentAdminDto result = userService.updateUserBan(testUser.getId(), banDate);
+
+        assertEquals(FORMATTER.format(banDate), result.getBannedUntil());
+    }
+
+    @Test
+    void updateUserBan_whenUserBannedAndBanDateIsNull_thenUnbanUser() {
+        LocalDateTime banDate = LocalDateTime.now().plusMonths(3);
+        var testUser = new User();
+        testUser.setId(1L);
+        testUser.setCommentsCount(0);
+        testUser.setRank(CommentsRank.NOVICE);
+        testUser.setBannedUntil(banDate);
+        testUser.setAdminWarnings(0);
+        Mockito.when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
+
+        UserCommentAdminDto result = userService.updateUserBan(testUser.getId(), null);
+
+        assertNull(result.getBannedUntil());
+    }
+
+    @Test
+    void updateUserBan_whenUserAlreadyBannedAndBanDateNotNull_thenThrowConflictException() {
+        String expectedMessage = "User already banned";
+        var testUser = new User();
+        testUser.setId(1L);
+        testUser.setCommentsCount(0);
+        testUser.setRank(CommentsRank.NOVICE);
+        testUser.setBannedUntil(LocalDateTime.now().plusMonths(7));
+        testUser.setAdminWarnings(0);
+        LocalDateTime banDate = LocalDateTime.now().plusMonths(3);
+
+        Mockito.when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
+
+        ConflictException exception = assertThrows(ConflictException.class,
+                () -> userService.updateUserBan(testUser.getId(), banDate));
+
+        assertEquals(expectedMessage, exception.getMessage());
+    }
+
+    @Test
+    void updateUserBan_whenUserNotBannedAndBanDateIsNull_thenThrowConflictException() {
+        String expectedMessage = "User not banned";
+        var testUser = new User();
+        testUser.setId(1L);
+        testUser.setCommentsCount(0);
+        testUser.setRank(CommentsRank.NOVICE);
+        testUser.setBannedUntil(null);
+        testUser.setAdminWarnings(0);
+        Mockito.when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
+
+        ConflictException exception = assertThrows(ConflictException.class,
+                () -> userService.updateUserBan(testUser.getId(), null));
+
+        assertEquals(expectedMessage, exception.getMessage());
     }
 }

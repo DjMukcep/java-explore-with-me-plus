@@ -50,4 +50,12 @@ public class User {
     public int hashCode() {
         return getClass().hashCode();
     }
+
+    public boolean isWarningsLimitExceeded() {
+        return adminWarnings >= 2;
+    }
+
+    public boolean isBanned() {
+        return bannedUntil != null && getBannedUntil().isAfter(LocalDateTime.now());
+    }
 }
