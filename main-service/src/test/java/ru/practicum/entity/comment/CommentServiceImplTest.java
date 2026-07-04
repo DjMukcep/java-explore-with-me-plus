@@ -22,11 +22,13 @@ import ru.practicum.exception.NotFoundException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceImplTest {
@@ -74,10 +76,10 @@ class CommentServiceImplTest {
         testUser.setCommentsCount(1);
         NewCommentDto newCommentDto = new NewCommentDto("Текст", 10L);
 
-        Mockito.when(userService.findById(1L)).thenReturn(testUser);
-        Mockito.when(eventService.findEventByIdAndState(10L, EventState.PUBLISHED)).thenReturn(testEvent);
+        when(userService.findById(1L)).thenReturn(testUser);
+        when(eventService.findEventByIdAndState(10L, EventState.PUBLISHED)).thenReturn(testEvent);
 
-        Mockito.when(commentRepository.save(any(Comment.class))).thenAnswer(invocation -> {
+        when(commentRepository.save(any(Comment.class))).thenAnswer(invocation -> {
             Comment c = invocation.getArgument(0);
             c.setId(100L);
             c.setCreated(LocalDateTime.now());
@@ -100,10 +102,10 @@ class CommentServiceImplTest {
         testUser.setBannedUntil(LocalDateTime.now().plusDays(1));
         NewCommentDto newCommentDto = new NewCommentDto("Текст", 10L);
 
-        Mockito.when(userService.findById(1L)).thenReturn(testUser);
+        when(userService.findById(1L)).thenReturn(testUser);
 
         assertThrows(ConflictException.class, () -> commentService.createComment(newCommentDto, 1L));
-        Mockito.verify(commentRepository, Mockito.never()).save(any());
+        verify(commentRepository, Mockito.never()).save(any());
     }
 
     @Test
@@ -111,9 +113,9 @@ class CommentServiceImplTest {
         testUser.setBannedUntil(LocalDateTime.now().minusDays(1));
         NewCommentDto newCommentDto = new NewCommentDto("Текст", 10L);
 
-        Mockito.when(userService.findById(1L)).thenReturn(testUser);
-        Mockito.when(eventService.findEventByIdAndState(10L, EventState.PUBLISHED)).thenReturn(testEvent);
-        Mockito.when(commentRepository.save(any(Comment.class))).thenAnswer(invocation -> {
+        when(userService.findById(1L)).thenReturn(testUser);
+        when(eventService.findEventByIdAndState(10L, EventState.PUBLISHED)).thenReturn(testEvent);
+        when(commentRepository.save(any(Comment.class))).thenAnswer(invocation -> {
             Comment c = invocation.getArgument(0);
             c.setCreated(LocalDateTime.now());
             return c;
@@ -141,8 +143,8 @@ class CommentServiceImplTest {
         updateDto.setUserId(1L);
         updateDto.setText("Новый текст");
 
-        Mockito.when(commentRepository.findWithAuthorById(100L)).thenReturn(Optional.of(existingComment));
-        Mockito.when(userService.findById(1L)).thenReturn(testUser);
+        when(commentRepository.findWithAuthorById(100L)).thenReturn(Optional.of(existingComment));
+        when(userService.findById(1L)).thenReturn(testUser);
 
         CommentDto result = commentService.updateComment(updateDto);
 
@@ -171,11 +173,9 @@ class CommentServiceImplTest {
         updateDto.setUserId(999L);
         updateDto.setText("Новый текст");
 
-        // 3. Настраиваем моки для ОБОИХ шагов до проверки автора
-        Mockito.when(commentRepository.findWithAuthorById(100L)).thenReturn(Optional.of(existingComment));
-        Mockito.when(userService.findById(999L)).thenReturn(hackerUser); // ИСПРАВЛЕНО: теперь findById не вернет null
+        when(commentRepository.findWithAuthorById(100L)).thenReturn(Optional.of(existingComment));
+        when(userService.findById(999L)).thenReturn(hackerUser);
 
-        // Ожидаем ошибку "It's not your own comment!"
         assertThrows(ConflictException.class, () -> commentService.updateComment(updateDto));
     }
 
@@ -185,16 +185,16 @@ class CommentServiceImplTest {
         existingComment.setId(100L);
         existingComment.setAuthor(testUser);
 
-        Mockito.when(commentRepository.findWithAuthorById(100L)).thenReturn(Optional.of(existingComment));
+        when(commentRepository.findWithAuthorById(100L)).thenReturn(Optional.of(existingComment));
 
         assertDoesNotThrow(() -> commentService.deleteComment(100L, 1L));
-        // Проверяем, что репозиторий действительно вызвал метод delete
-        Mockito.verify(commentRepository, Mockito.times(1)).delete(existingComment);
+
+        verify(commentRepository, times(1)).delete(existingComment);
     }
 
     @Test
     void deleteComment_whenCommentNotFound_thenThrowsNotFoundException() {
-        Mockito.when(commentRepository.findWithAuthorById(100L)).thenReturn(Optional.empty());
+        when(commentRepository.findWithAuthorById(100L)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> commentService.deleteComment(100L, 1L));
     }
@@ -218,7 +218,7 @@ class CommentServiceImplTest {
         c2.setText("Текст 2");
         c2.setCreated(LocalDateTime.now());
 
-        Mockito.when(commentRepository.findAllByAuthorId(1L)).thenReturn(List.of(c1, c2));
+        when(commentRepository.findAllByAuthorId(1L)).thenReturn(List.of(c1, c2));
 
         List<CommentDto> result = commentService.getComments(1L);
 
@@ -230,7 +230,7 @@ class CommentServiceImplTest {
 
     @Test
     void incrementWarning_whenUserNotExceededWarningsLimitAndCommentNotReceivedWarning_Count_thenIncreaseWarningsCount() {
-        Mockito.when(commentRepository.findWithAuthorById(20L)).thenReturn(Optional.of(testComment));
+        when(commentRepository.findWithAuthorById(20L)).thenReturn(Optional.of(testComment));
 
         UserCommentAdminDto result = commentService.giveWarning(testComment.getId());
 
@@ -245,7 +245,7 @@ class CommentServiceImplTest {
                 testUser.getId(), testComment.getId());
 
         testComment.setAdminWarning(true);
-        Mockito.when(commentRepository.findWithAuthorById(20L)).thenReturn(Optional.of(testComment));
+        when(commentRepository.findWithAuthorById(20L)).thenReturn(Optional.of(testComment));
 
         ConflictException exception = assertThrows(ConflictException.class,
                 () -> commentService.giveWarning(testComment.getId()));
@@ -257,7 +257,7 @@ class CommentServiceImplTest {
     void incrementWarning_Count_whenUserExceededWarningsLimit_thenBanUserFor6Months() {
         LocalDateTime expectedBanDate = LocalDateTime.now().plusMonths(6);
         testUser.setAdminWarnings(2);
-        Mockito.when(commentRepository.findWithAuthorById(20L)).thenReturn(Optional.of(testComment));
+        when(commentRepository.findWithAuthorById(20L)).thenReturn(Optional.of(testComment));
 
         UserCommentAdminDto result = commentService.giveWarning(testComment.getId());
 
@@ -273,7 +273,7 @@ class CommentServiceImplTest {
         String expectedMessage = "You have been banned!";
         testUser.setAdminWarnings(2);
         testUser.setBannedUntil(LocalDateTime.now().plusMonths(3));
-        Mockito.when(commentRepository.findWithAuthorById(20L)).thenReturn(Optional.of(testComment));
+        when(commentRepository.findWithAuthorById(20L)).thenReturn(Optional.of(testComment));
 
         ConflictException exception = assertThrows(ConflictException.class,
                 () -> commentService.giveWarning(testComment.getId()));
@@ -283,17 +283,94 @@ class CommentServiceImplTest {
 
     @Test
     void adminDelete_whenValid_thenCallsDelete() {
-        Mockito.when(commentRepository.findWithAuthorById(testComment.getId())).thenReturn(Optional.of(testComment));
+        when(commentRepository.findWithAuthorById(testComment.getId())).thenReturn(Optional.of(testComment));
 
         assertDoesNotThrow(() -> commentService.adminDelete(testComment.getId()));
 
-        Mockito.verify(commentRepository, Mockito.times(1)).delete(testComment);
+        verify(commentRepository, times(1)).delete(testComment);
     }
 
     @Test
     void adminDelete_whenCommentNotFound_thenThrowsNotFoundException() {
-        Mockito.when(commentRepository.findWithAuthorById(testComment.getId())).thenReturn(Optional.empty());
+        when(commentRepository.findWithAuthorById(testComment.getId())).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> commentService.adminDelete(testComment.getId()));
+    }
+
+    @Test
+    void getEventComments_WhenCommentsExist_ThenReturnDtoList() {
+        Long eventId = 1L;
+        when(commentRepository.findAllByEventId(eventId)).thenReturn(List.of(testComment));
+
+        List<CommentDto> result = commentService.getEventComments(eventId);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(testComment.getId(), result.getFirst().getId());
+        assertEquals(testComment.getText(), result.getFirst().getText());
+        verify(commentRepository, times(1)).findAllByEventId(eventId);
+    }
+
+    @Test
+    void getEventComments_WhenNoComments_ThenReturnEmptyList() {
+        Long eventId = 1L;
+        when(commentRepository.findAllByEventId(eventId)).thenReturn(Collections.emptyList());
+
+        List<CommentDto> result = commentService.getEventComments(eventId);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(commentRepository, times(1)).findAllByEventId(eventId);
+    }
+
+    // --- Тесты для getComment(Long commentId) ---
+
+    @Test
+    void getComment_WhenCommentExists_ThenReturnDto() {
+        Long commentId = testComment.getId();
+        when(commentRepository.findWithAuthorById(commentId)).thenReturn(Optional.of(testComment));
+
+        CommentDto result = commentService.getComment(commentId);
+
+        assertNotNull(result);
+        assertEquals(testComment.getId(), result.getId());
+        assertEquals(testComment.getText(), result.getText());
+        verify(commentRepository, times(1)).findWithAuthorById(commentId);
+    }
+
+    @Test
+    void getComment_WhenCommentDoesNotExist_ThenThrowException() {
+        Long commentId = 99L;
+        when(commentRepository.findWithAuthorById(commentId)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> commentService.getComment(commentId));
+        verify(commentRepository, times(1)).findWithAuthorById(commentId);
+    }
+
+    // --- Тесты для searchComments(String text) ---
+
+    @Test
+    void searchComments_WhenMatchesFound_ThenReturnDtoList() {
+        String searchText = "Тест";
+        when(commentRepository.findAllByTextContainsIgnoreCase(searchText)).thenReturn(List.of(testComment));
+
+        List<CommentDto> result = commentService.searchComments(searchText);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(testComment.getText(), result.getFirst().getText());
+        verify(commentRepository, times(1)).findAllByTextContainsIgnoreCase(searchText);
+    }
+
+    @Test
+    void searchComments_WhenNoMatches_ThenReturnEmptyList() {
+        String searchText = "НичегоНеНайдено";
+        when(commentRepository.findAllByTextContainsIgnoreCase(searchText)).thenReturn(Collections.emptyList());
+
+        List<CommentDto> result = commentService.searchComments(searchText);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(commentRepository, times(1)).findAllByTextContainsIgnoreCase(searchText);
     }
 }

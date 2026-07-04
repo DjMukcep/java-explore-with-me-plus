@@ -17,6 +17,12 @@ public interface CommentService {
 
     List<CommentDto> getComments(Long userId);
 
+    List<CommentDto> getEventComments(Long eventId);
+
+    CommentDto getComment(Long commentId);
+
+    List<CommentDto> searchComments(String text);
+
     UserCommentAdminDto giveWarning(Long commentId);
 
     Comment getById(Long id);

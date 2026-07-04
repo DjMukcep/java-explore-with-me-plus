@@ -13,4 +13,10 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     @EntityGraph(attributePaths = "author")
     List<Comment> findAllByAuthorId(Long id);
+
+    @EntityGraph(attributePaths = "author")
+    List<Comment> findAllByEventId(Long eventId);
+
+    @EntityGraph(attributePaths = "author")
+    List<Comment> findAllByTextContainsIgnoreCase(String text);
 }
