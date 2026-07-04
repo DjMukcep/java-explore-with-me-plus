@@ -76,23 +76,26 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserCommentAdminDto updateUserBan(Long userId, LocalDateTime banDate) {
         User user = findById(userId);
+        return banDate != null ? banUser(user, banDate) : unbanUser(user);
+    }
 
-        if (banDate != null) {
-            if (user.getBannedUntil() != null && user.getBannedUntil().isAfter(LocalDateTime.now())) {
-                throw new ConflictException("User already banned");
-            }
-
-            log.info("Пользователь получил блокировку до {}: {}", banDate,  user);
-            user.setBannedUntil(banDate);
-        } else {
-            if (user.getBannedUntil() == null || user.getBannedUntil().isBefore(LocalDateTime.now())) {
-                throw new ConflictException("User not banned");
-            }
-
-            log.info("Пользователь разблокирован:{}", user);
-            user.setBannedUntil(null);
+    private static UserCommentAdminDto unbanUser(User user) {
+        if (!user.isBanned()) {
+            throw new ConflictException("User not banned");
         }
 
+        log.info("Пользователь разблокирован:{}", user);
+        user.setBannedUntil(null);
+        return CommentMapper.toUserCommentAdminDto(user);
+    }
+
+    private static UserCommentAdminDto banUser(User user, LocalDateTime banDate) {
+        if (user.isBanned()) {
+            throw new ConflictException("User already banned");
+        }
+
+        log.info("Пользователь получил блокировку до {}: {}", banDate,  user);
+        user.setBannedUntil(banDate);
         return CommentMapper.toUserCommentAdminDto(user);
     }
 }

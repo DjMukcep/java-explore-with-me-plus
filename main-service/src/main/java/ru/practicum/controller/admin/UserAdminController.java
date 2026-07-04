@@ -26,8 +26,6 @@ public class UserAdminController {
 
     private final UserService userService;
 
-    private static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
-
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public UserDto saveUser(@RequestBody @Valid NewUserRequest userRequest) {
@@ -48,7 +46,7 @@ public class UserAdminController {
 
     @PatchMapping("/{userId}")
     public UserCommentAdminDto updateUserBan(@PathVariable @Positive Long userId,
-                                             @RequestParam(required = false) @DateTimeFormat(pattern = DATE_TIME_PATTERN) @Future LocalDateTime banDate) {
+                                             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") @Future LocalDateTime banDate) {
 
         return userService.updateUserBan(userId, banDate);
     }

@@ -229,7 +229,7 @@ class CommentServiceImplTest {
     }
 
     @Test
-    void giveWarning_whenUserNotExceededWarningsLimitAndCommentNotReceivedWarning_thenIncreaseWarningsCount() {
+    void incrementWarning_whenUserNotExceededWarningsLimitAndCommentNotReceivedWarning_Count_thenIncreaseWarningsCount() {
         Mockito.when(commentRepository.findWithAuthorById(20L)).thenReturn(Optional.of(testComment));
 
         UserCommentAdminDto result = commentService.giveWarning(testComment.getId());
@@ -240,7 +240,7 @@ class CommentServiceImplTest {
     }
 
     @Test
-    void giveWarning_whenCommentAlreadyReceivedWarning_thenThrowConflictException() {
+    void incrementWarning_whenCommentAlreadyReceivedWarning_Count_thenThrowConflictException() {
         String expectedMessage = String.format("User with id %s already received warning for comment with id %s",
                 testUser.getId(), testComment.getId());
 
@@ -254,7 +254,7 @@ class CommentServiceImplTest {
     }
 
     @Test
-    void giveWarning_whenUserExceededWarningsLimit_thenBanUserFor6Months() {
+    void incrementWarning_Count_whenUserExceededWarningsLimit_thenBanUserFor6Months() {
         LocalDateTime expectedBanDate = LocalDateTime.now().plusMonths(6);
         testUser.setAdminWarnings(2);
         Mockito.when(commentRepository.findWithAuthorById(20L)).thenReturn(Optional.of(testComment));
@@ -269,8 +269,8 @@ class CommentServiceImplTest {
     }
 
     @Test
-    void giveWarning_whenUserExceededWarningsLimitAndUserAlreadyBanned_thenThrowConflictException() {
-        String expectedMessage = "User already banned";
+    void incrementWarning_Count_whenUserExceededWarningsLimitAndUserAlreadyBanned_thenThrowConflictException() {
+        String expectedMessage = "You have been banned!";
         testUser.setAdminWarnings(2);
         testUser.setBannedUntil(LocalDateTime.now().plusMonths(3));
         Mockito.when(commentRepository.findWithAuthorById(20L)).thenReturn(Optional.of(testComment));
