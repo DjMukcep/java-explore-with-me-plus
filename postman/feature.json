@@ -1,10 +1,9 @@
 {
   "info": {
-    "_postman_id": "6670c265-6106-4e54-87fb-76b17748e021",
+    "_postman_id": "ed924b17-143d-4535-8f33-76fd5303a857",
     "name": "feature - comments",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "44670136",
-    "_collection_link": "https://go.postman.co/collection/44670136-6670c265-6106-4e54-87fb-76b17748e021?source=collection_link"
+    "_exporter_id": "42229232"
   },
   "item": [
     {
@@ -559,6 +558,536 @@
           }
         }
       ]
+    },
+    {
+      "name": "admin",
+      "item": [
+        {
+          "name": "Выдача предупреждения пользователю",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        const user = await api.addUser(rnd.getUser());\r",
+                  "        pm.collectionVariables.set(\"uid\", user.id);\r",
+                  "\r",
+                  "        const category = await api.addCategory(rnd.getCategory());\r",
+                  "\r",
+                  "        let eventBody = rnd.getEvent(category.id);\r",
+                  "        eventBody['requestModeration'] = true\r",
+                  "        eventBody['participantLimit'] = 0\r",
+                  "\r",
+                  "        let event = await api.addEvent(user.id, eventBody);\r",
+                  "        event = await api.publishEvent(event.id);\r",
+                  "\r",
+                  "        const comment = await api.addComment(user.id, rnd.getComment(event.id));\r",
+                  "        pm.collectionVariables.set(\"commentId\", comment.id);\r",
+                  "\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "        pm.test(\"Критическая ошибка в Pre-request Script: \" + err.message, function() { pm.expect.fail(err); });\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Ответ должен содержать код статуса 200 и данные в формате json\", function () {\r",
+                  "    pm.response.to.have.status(200);   \r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});\r",
+                  "\r",
+                  "const target = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Ответ должен содержать поля: authorId, authorName, adminWarnCount\", function () {\r",
+                  "        pm.expect(target).to.have.property('authorId');\r",
+                  "        pm.expect(target).to.have.property('authorName');\r",
+                  "        pm.expect(target).to.have.property('adminWarnCount');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Поля ответа не должны быть пустыми или null\", function () {\r",
+                  "    pm.expect(target.authorId).to.be.a('number').and.to.be.above(0);\r",
+                  "    pm.expect(target.authorName).to.be.a('string').and.not.be.empty;\r",
+                  "    pm.expect(target.adminWarnCount).to.be.a('number').and.to.be.above(0);\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/comments/{{commentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "comments",
+                "{{commentId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Бан пользователя при превышении лимита предупреждений",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        const user = await api.addUser(rnd.getUser());\r",
+                  "        pm.collectionVariables.set(\"uid\", user.id);\r",
+                  "\r",
+                  "        const category = await api.addCategory(rnd.getCategory());\r",
+                  "\r",
+                  "        let eventBody = rnd.getEvent(category.id);\r",
+                  "        eventBody['requestModeration'] = true\r",
+                  "        eventBody['participantLimit'] = 0\r",
+                  "\r",
+                  "        let event = await api.addEvent(user.id, eventBody);\r",
+                  "        event = await api.publishEvent(event.id);\r",
+                  "\r",
+                  "        const firstComment = await api.addComment(user.id, rnd.getComment(event.id));\r",
+                  "        const secondComment = await api.addComment(user.id, rnd.getComment(event.id));\r",
+                  "        const comment = await api.addComment(user.id, rnd.getComment(event.id));\r",
+                  "        pm.collectionVariables.set(\"commentId\", comment.id);\r",
+                  "\r",
+                  "        await api.warnUser(firstComment.id);\r",
+                  "        await api.warnUser(secondComment.id);\r",
+                  "\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "        pm.test(\"Критическая ошибка в Pre-request Script: \" + err.message, function() { pm.expect.fail(err); });\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Ответ должен содержать код статуса 200 и данные в формате json\", function () {\r",
+                  "    pm.response.to.have.status(200);   \r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});\r",
+                  "\r",
+                  "const target = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Ответ должен содержать поля: authorId, authorName, adminWarnCount, bannedUntil\", function () {\r",
+                  "        pm.expect(target).to.have.property('authorId');\r",
+                  "        pm.expect(target).to.have.property('authorName');\r",
+                  "        pm.expect(target).to.have.property('adminWarnCount');\r",
+                  "        pm.expect(target).to.have.property('bannedUntil');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Поля ответа не должны быть пустыми или null\", function () {\r",
+                  "    pm.expect(target.authorId).to.be.a('number').and.to.be.above(0);\r",
+                  "    pm.expect(target.authorName).to.be.a('string').and.not.be.empty;\r",
+                  "    pm.expect(target.adminWarnCount).to.be.a('number').and.to.be.eq(0);\r",
+                  "    pm.expect(target.bannedUntil).to.be.a('string').and.not.be.empty;\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/comments/{{commentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "comments",
+                "{{commentId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Бан пользователя",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        const user = await api.addUser(rnd.getUser());\r",
+                  "        pm.collectionVariables.set(\"uid\", user.id);\r",
+                  "\r",
+                  "        const banDate = rnd.getFutureDateTime();\r",
+                  "        pm.collectionVariables.set(\"banDate\", banDate);\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "        pm.test(\"Критическая ошибка в Pre-request Script: \" + err.message, function() { pm.expect.fail(err); });\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Ответ должен содержать код статуса 200 и данные в формате json\", function () {\r",
+                  "    pm.response.to.have.status(200);   \r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});\r",
+                  "\r",
+                  "const target = pm.response.json();\r",
+                  "var query = {};\r",
+                  "pm.request.url.query.all().forEach((param) => { query[param.key] = decodeURIComponent(param.value)});\r",
+                  "\r",
+                  "pm.test(\"Ответ должен содержать поля: authorId, authorName, adminWarnCount, bannedUntil\", function () {\r",
+                  "        pm.expect(target).to.have.property('authorId');\r",
+                  "        pm.expect(target).to.have.property('authorName');\r",
+                  "        pm.expect(target).to.have.property('adminWarnCount');\r",
+                  "        pm.expect(target).to.have.property('bannedUntil');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Поля ответа не должны быть пустыми или null\", function () {\r",
+                  "    pm.expect(target.authorId).to.be.a('number').and.to.be.above(0);\r",
+                  "    pm.expect(target.authorName).to.be.a('string').and.not.be.empty;\r",
+                  "    pm.expect(target.adminWarnCount).to.be.a('number').and.to.be.eq(0);\r",
+                  "    pm.expect(target.bannedUntil).to.be.a('string').and.not.be.empty;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Дата окончания бана должна совпадать с отправленной\", function () {\r",
+                  "    pm.expect(target.bannedUntil).to.be.eq(query['banDate']);\r",
+                  "});\r",
+                  "\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{uid}}?banDate={{banDate}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{uid}}"
+              ],
+              "query": [
+                {
+                  "key": "banDate",
+                  "value": "{{banDate}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Разбан пользователя",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        const user = await api.addUser(rnd.getUser());\r",
+                  "        pm.collectionVariables.set(\"uid\", user.id);\r",
+                  "\r",
+                  "        const banDate = rnd.getFutureDateTime();\r",
+                  "        pm.collectionVariables.set(\"banDate\", banDate);\r",
+                  "\r",
+                  "        await api.banUser(user.id, banDate);\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "        pm.test(\"Критическая ошибка в Pre-request Script: \" + err.message, function() { pm.expect.fail(err); });\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Ответ должен содержать код статуса 200 и данные в формате json\", function () {\r",
+                  "    pm.response.to.have.status(200);   \r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});\r",
+                  "\r",
+                  "const target = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Ответ должен содержать поля: authorId, authorName, adminWarnCount\", function () {\r",
+                  "        pm.expect(target).to.have.property('authorId');\r",
+                  "        pm.expect(target).to.have.property('authorName');\r",
+                  "        pm.expect(target).to.have.property('adminWarnCount');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Поля ответа не должны быть пустыми или null\", function () {\r",
+                  "    pm.expect(target.authorId).to.be.a('number').and.to.be.above(0);\r",
+                  "    pm.expect(target.authorName).to.be.a('string').and.not.be.empty;\r",
+                  "    pm.expect(target.adminWarnCount).to.be.a('number').and.to.be.eq(0);\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{uid}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{uid}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Удаление комментария администратором",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        const user = await api.addUser(rnd.getUser());\r",
+                  "        pm.collectionVariables.set(\"uid\", user.id);\r",
+                  "\r",
+                  "        const category = await api.addCategory(rnd.getCategory());\r",
+                  "\r",
+                  "        let eventBody = rnd.getEvent(category.id);\r",
+                  "        eventBody['requestModeration'] = true\r",
+                  "        eventBody['participantLimit'] = 0\r",
+                  "\r",
+                  "        let event = await api.addEvent(user.id, eventBody);\r",
+                  "        event = await api.publishEvent(event.id);\r",
+                  "\r",
+                  "        const comment = await api.addComment(user.id, rnd.getComment(event.id));\r",
+                  "        pm.collectionVariables.set(\"commentId\", comment.id);\r",
+                  "\r",
+                  "        const originalAuthorId = pm.collectionVariables.get(\"uid\");\r",
+                  "        const findedComments = await api.getComments(originalAuthorId);\r",
+                  "        pm.collectionVariables.set(\"responseArr\", findedComments);\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "        pm.test(\"Критическая ошибка в Pre-request Script: \" + err.message, function() { pm.expect.fail(err); });\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const source = pm.collectionVariables.get('responseArr');\r",
+                  "const commentId = Number(pm.collectionVariables.get('commentId'));\r",
+                  "const userId = pm.collectionVariables.get('uid');\r",
+                  "\r",
+                  "pm.test(\"Ответ должен содержать код статуса 204\", function () {\r",
+                  "    pm.response.to.have.status(204);   \r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Комментарий должен быть найден в списке до удаления\", function () {\r",
+                  "    const isFoundBefore = source.some(comment => comment.id === commentId);\r",
+                  "    pm.expect(isFoundBefore).to.be.true;\r",
+                  "});\r",
+                  "\r",
+                  "pm.sendRequest({\r",
+                  "    url: pm.collectionVariables.get(\"baseUrl\") + `/users/${userId}/comments`,\r",
+                  "    method: 'GET',\r",
+                  "}, (error, response) => {\r",
+                  "    pm.test(\"Комментарий не должен быть найден в списке после удаления\", function () {\r",
+                  "        pm.expect(response).to.have.status(200);\r",
+                  "\r",
+                  "        const freshCommentsList = response.json();\r",
+                  "        const isFoundAfter = freshCommentsList.some(comment => comment.id === commentId);\r",
+                  "        pm.expect(isFoundAfter).to.be.false;\r",
+                  "    });\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/comments/{{commentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "comments",
+                "{{commentId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "event": [
@@ -642,6 +1171,18 @@
           "",
           "    async getComments(userId, verbose = null) {",
           "        return this.get(`/users/${userId}/comments`, \"Ошибка при получении комментариев пользователя: \", verbose);",
+          "    }",
+          "",
+          "    async warnUser(commentId, verbose = null) {",
+          "        return this.patch(`/admin/comments/${commentId}`, null, \"Ошибка при выдаче предупреждения пользователю\", verbose)",
+          "    }",
+          "",
+          "    async unbanUser(userId, verbose = null) {",
+          "        return this.patch(`/admin/users/${userId}`, null, \"Ошибка при разбане пользователя\", verbose)",
+          "    }",
+          "",
+          "    async banUser(userId, banDate, verbose = null) {",
+          "        return this.patch(`/admin/users/${userId}?banDate=${banDate}`, null, \"Ошибка при бане пользователя\", verbose)",
           "    }",
           "    ",
           "    async sendRequest(method, path, body=null, errorText = \"Ошибка при выполнении запроса: \", verbose=null) {",
@@ -832,6 +1373,10 @@
     {
       "key": "uid",
       "value": 4
+    },
+    {
+      "key": "banDate",
+      "value": ""
     }
   ]
 }

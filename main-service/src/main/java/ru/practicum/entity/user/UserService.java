@@ -1,9 +1,11 @@
 package ru.practicum.entity.user;
 
+import ru.practicum.dto.comment.UserCommentAdminDto;
 import ru.practicum.dto.user.NewUserRequest;
 import ru.practicum.dto.user.UserDto;
 import ru.practicum.dto.user.UserParamDto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface UserService {
@@ -17,4 +19,6 @@ public interface UserService {
     User findById(Long userId);
 
     void checkUserExist(Long userId);
+
+    UserCommentAdminDto updateUserBan(Long userId, LocalDateTime banDate);
 }

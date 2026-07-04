@@ -1,9 +1,27 @@
 package ru.practicum.controller.admin;
 
-/**
- * PATCH /admin/comments/{commentId} - предупреждение на коммент и пользователю - 2 предупреждения макс. На 3 автор в бан на полгода его счетчик в ноль
- * PATCH /admin/comments/users/{userId} - выдать бан пользователю на комменты до любого момента времени в будущем, отменить бан
- * DELETE /admin/comments/{commentId} - удалить коммент
- */
+import jakarta.validation.constraints.Positive;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import ru.practicum.dto.comment.UserCommentAdminDto;
+import ru.practicum.entity.comment.CommentService;
+
+@RestController
+@RequestMapping("/admin/comments")
+@RequiredArgsConstructor
 public class CommentAdminController {
+
+    private final CommentService commentService;
+
+    @PatchMapping("/{commentId}")
+    public UserCommentAdminDto warnUser(@PathVariable @Positive Long commentId) {
+        return commentService.giveWarning(commentId);
+    }
+
+    @DeleteMapping("/{commentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteComment(@PathVariable @Positive Long commentId) {
+        commentService.adminDelete(commentId);
+    }
 }
