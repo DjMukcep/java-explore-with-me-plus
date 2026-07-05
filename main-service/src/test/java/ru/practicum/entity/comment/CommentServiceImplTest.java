@@ -7,6 +7,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import ru.practicum.dto.comment.CommentDto;
 import ru.practicum.dto.comment.NewCommentDto;
 import ru.practicum.dto.comment.UpdateCommentDto;
@@ -143,7 +145,7 @@ class CommentServiceImplTest {
         updateDto.setUserId(1L);
         updateDto.setText("Новый текст");
 
-        when(commentRepository.findWithAuthorById(100L)).thenReturn(Optional.of(existingComment));
+        when(commentRepository.findWithRelationsById(100L)).thenReturn(Optional.of(existingComment));
         when(userService.findById(1L)).thenReturn(testUser);
 
         CommentDto result = commentService.updateComment(updateDto);
@@ -173,7 +175,7 @@ class CommentServiceImplTest {
         updateDto.setUserId(999L);
         updateDto.setText("Новый текст");
 
-        when(commentRepository.findWithAuthorById(100L)).thenReturn(Optional.of(existingComment));
+        when(commentRepository.findWithRelationsById(100L)).thenReturn(Optional.of(existingComment));
         when(userService.findById(999L)).thenReturn(hackerUser);
 
         assertThrows(ConflictException.class, () -> commentService.updateComment(updateDto));
@@ -183,9 +185,11 @@ class CommentServiceImplTest {
     void deleteComment_whenValid_thenCallsDelete() {
         Comment existingComment = new Comment();
         existingComment.setId(100L);
+        testUser.setCommentsCount(1);
         existingComment.setAuthor(testUser);
 
-        when(commentRepository.findWithAuthorById(100L)).thenReturn(Optional.of(existingComment));
+
+        when(commentRepository.findWithRelationsById(100L)).thenReturn(Optional.of(existingComment));
 
         assertDoesNotThrow(() -> commentService.deleteComment(100L, 1L));
 
@@ -194,7 +198,7 @@ class CommentServiceImplTest {
 
     @Test
     void deleteComment_whenCommentNotFound_thenThrowsNotFoundException() {
-        when(commentRepository.findWithAuthorById(100L)).thenReturn(Optional.empty());
+        when(commentRepository.findWithRelationsById(100L)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> commentService.deleteComment(100L, 1L));
     }
@@ -230,7 +234,7 @@ class CommentServiceImplTest {
 
     @Test
     void incrementWarning_whenUserNotExceededWarningsLimitAndCommentNotReceivedWarning_Count_thenIncreaseWarningsCount() {
-        when(commentRepository.findWithAuthorById(20L)).thenReturn(Optional.of(testComment));
+        when(commentRepository.findWithRelationsById(20L)).thenReturn(Optional.of(testComment));
 
         UserCommentAdminDto result = commentService.giveWarning(testComment.getId());
 
@@ -245,7 +249,7 @@ class CommentServiceImplTest {
                 testUser.getId(), testComment.getId());
 
         testComment.setAdminWarning(true);
-        when(commentRepository.findWithAuthorById(20L)).thenReturn(Optional.of(testComment));
+        when(commentRepository.findWithRelationsById(20L)).thenReturn(Optional.of(testComment));
 
         ConflictException exception = assertThrows(ConflictException.class,
                 () -> commentService.giveWarning(testComment.getId()));
@@ -257,7 +261,7 @@ class CommentServiceImplTest {
     void incrementWarning_Count_whenUserExceededWarningsLimit_thenBanUserFor6Months() {
         LocalDateTime expectedBanDate = LocalDateTime.now().plusMonths(6);
         testUser.setAdminWarnings(2);
-        when(commentRepository.findWithAuthorById(20L)).thenReturn(Optional.of(testComment));
+        when(commentRepository.findWithRelationsById(20L)).thenReturn(Optional.of(testComment));
 
         UserCommentAdminDto result = commentService.giveWarning(testComment.getId());
 
@@ -273,7 +277,7 @@ class CommentServiceImplTest {
         String expectedMessage = "You have been banned!";
         testUser.setAdminWarnings(2);
         testUser.setBannedUntil(LocalDateTime.now().plusMonths(3));
-        when(commentRepository.findWithAuthorById(20L)).thenReturn(Optional.of(testComment));
+        when(commentRepository.findWithRelationsById(20L)).thenReturn(Optional.of(testComment));
 
         ConflictException exception = assertThrows(ConflictException.class,
                 () -> commentService.giveWarning(testComment.getId()));
@@ -283,7 +287,7 @@ class CommentServiceImplTest {
 
     @Test
     void adminDelete_whenValid_thenCallsDelete() {
-        when(commentRepository.findWithAuthorById(testComment.getId())).thenReturn(Optional.of(testComment));
+        when(commentRepository.findWithRelationsById(testComment.getId())).thenReturn(Optional.of(testComment));
 
         assertDoesNotThrow(() -> commentService.adminDelete(testComment.getId()));
 
@@ -292,7 +296,7 @@ class CommentServiceImplTest {
 
     @Test
     void adminDelete_whenCommentNotFound_thenThrowsNotFoundException() {
-        when(commentRepository.findWithAuthorById(testComment.getId())).thenReturn(Optional.empty());
+        when(commentRepository.findWithRelationsById(testComment.getId())).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> commentService.adminDelete(testComment.getId()));
     }
@@ -301,6 +305,7 @@ class CommentServiceImplTest {
     void getEventComments_WhenCommentsExist_ThenReturnDtoList() {
         Long eventId = 1L;
         when(commentRepository.findAllByEventId(eventId)).thenReturn(List.of(testComment));
+        when(eventService.isEventExists(eventId)).thenReturn(true);
 
         List<CommentDto> result = commentService.getEventComments(eventId);
 
@@ -312,15 +317,11 @@ class CommentServiceImplTest {
     }
 
     @Test
-    void getEventComments_WhenNoComments_ThenReturnEmptyList() {
+    void getEventComments_WhenNoComments_ThenThrowsNotFoundException() {
         Long eventId = 1L;
-        when(commentRepository.findAllByEventId(eventId)).thenReturn(Collections.emptyList());
 
-        List<CommentDto> result = commentService.getEventComments(eventId);
-
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-        verify(commentRepository, times(1)).findAllByEventId(eventId);
+        assertThrows(NotFoundException.class, () -> commentService.getEventComments(eventId));
+        verify(commentRepository, never()).findAllByEventId(eventId);
     }
 
     // --- Тесты для getComment(Long commentId) ---
@@ -328,23 +329,23 @@ class CommentServiceImplTest {
     @Test
     void getComment_WhenCommentExists_ThenReturnDto() {
         Long commentId = testComment.getId();
-        when(commentRepository.findWithAuthorById(commentId)).thenReturn(Optional.of(testComment));
+        when(commentRepository.findWithRelationsById(commentId)).thenReturn(Optional.of(testComment));
 
         CommentDto result = commentService.getComment(commentId);
 
         assertNotNull(result);
         assertEquals(testComment.getId(), result.getId());
         assertEquals(testComment.getText(), result.getText());
-        verify(commentRepository, times(1)).findWithAuthorById(commentId);
+        verify(commentRepository, times(1)).findWithRelationsById(commentId);
     }
 
     @Test
     void getComment_WhenCommentDoesNotExist_ThenThrowException() {
         Long commentId = 99L;
-        when(commentRepository.findWithAuthorById(commentId)).thenReturn(Optional.empty());
+        when(commentRepository.findWithRelationsById(commentId)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> commentService.getComment(commentId));
-        verify(commentRepository, times(1)).findWithAuthorById(commentId);
+        verify(commentRepository, times(1)).findWithRelationsById(commentId);
     }
 
     // --- Тесты для searchComments(String text) ---
@@ -352,25 +353,27 @@ class CommentServiceImplTest {
     @Test
     void searchComments_WhenMatchesFound_ThenReturnDtoList() {
         String searchText = "Тест";
-        when(commentRepository.findAllByTextContainsIgnoreCase(searchText)).thenReturn(List.of(testComment));
+        Pageable pageable = PageRequest.of(0, 10);
+        when(commentRepository.findAllByTextContainsIgnoreCase(searchText, pageable)).thenReturn(List.of(testComment));
 
-        List<CommentDto> result = commentService.searchComments(searchText);
+        List<CommentDto> result = commentService.searchComments(searchText, pageable);
 
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(testComment.getText(), result.getFirst().getText());
-        verify(commentRepository, times(1)).findAllByTextContainsIgnoreCase(searchText);
+        verify(commentRepository, times(1)).findAllByTextContainsIgnoreCase(searchText, pageable);
     }
 
     @Test
     void searchComments_WhenNoMatches_ThenReturnEmptyList() {
         String searchText = "НичегоНеНайдено";
-        when(commentRepository.findAllByTextContainsIgnoreCase(searchText)).thenReturn(Collections.emptyList());
+        Pageable pageable = PageRequest.of(0, 10);
+        when(commentRepository.findAllByTextContainsIgnoreCase(searchText,pageable)).thenReturn(Collections.emptyList());
 
-        List<CommentDto> result = commentService.searchComments(searchText);
+        List<CommentDto> result = commentService.searchComments(searchText, pageable);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
-        verify(commentRepository, times(1)).findAllByTextContainsIgnoreCase(searchText);
+        verify(commentRepository, times(1)).findAllByTextContainsIgnoreCase(searchText, pageable);
     }
 }

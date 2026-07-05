@@ -377,6 +377,11 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
     }
 
+    @Override
+    public boolean isEventExists(Long eventId) {
+        return eventRepository.existsById(eventId);
+    }
+
     // ---------- QueryDSL predicates ----------
 
     private Predicate buildAdminPredicate(EventAdminParamDto params) {

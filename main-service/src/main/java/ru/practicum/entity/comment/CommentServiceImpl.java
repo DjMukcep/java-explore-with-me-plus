@@ -2,6 +2,7 @@ package ru.practicum.entity.comment;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.comment.CommentDto;
@@ -18,6 +19,7 @@ import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -69,8 +71,14 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public void deleteComment(Long commentId, Long userId) {
         Comment comment = getById(commentId);
+        User author = comment.getAuthor();
         checkAuthor(comment, userId);
+
         commentRepository.delete(comment);
+
+        author.setCommentsCount(author.getCommentsCount() - 1);
+        setUserRank(author);
+
         log.info("Комментарий id: {} удален пользователем id: {}", commentId, userId);
     }
 
@@ -101,6 +109,10 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public List<CommentDto> getEventComments(Long eventId) {
+        if (!eventService.isEventExists(eventId)) {
+            throw new NotFoundException(String.format("Event id: %d not found.", eventId));
+        }
+
         return CommentMapper.toCommentDto(commentRepository.findAllByEventId(eventId));
     }
 
@@ -110,13 +122,19 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<CommentDto> searchComments(String text) {
-        return CommentMapper.toCommentDto(commentRepository.findAllByTextContainsIgnoreCase(text));
+    public List<CommentDto> searchComments(String text, Pageable pageable) {
+        List<Comment> comments = commentRepository.findAllByTextContainsIgnoreCase(text, pageable);
+
+        if (comments.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return CommentMapper.toCommentDto(comments);
     }
 
     @Override
     public Comment getById(Long id) {
-        return commentRepository.findWithAuthorById(id).orElseThrow(
+        return commentRepository.findWithRelationsById(id).orElseThrow(
                 () -> new NotFoundException("Comment not found with id: " + id)
         );
     }
@@ -139,11 +157,17 @@ public class CommentServiceImpl implements CommentService {
     }
 
     private void setUserRank(User user) {
-        if (user.getCommentsCount() == 2) {
+        int commentsCount = user.getCommentsCount();
+
+        if (commentsCount == 1 && user.getRank() == CommentsRank.REGULAR) {
+            user.setRank(CommentsRank.NOVICE);
+        }
+
+        if (commentsCount == 2) {
             user.setRank(CommentsRank.REGULAR);
         }
 
-        if (user.getCommentsCount() > 2 && user.getRank() == CommentsRank.REGULAR) {
+        if (commentsCount > 2 && user.getRank() == CommentsRank.REGULAR) {
             user.setRank(CommentsRank.VETERAN);
         }
     }

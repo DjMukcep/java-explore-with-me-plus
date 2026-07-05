@@ -1,5 +1,6 @@
 package ru.practicum.entity.comment;
 
+import org.springframework.data.domain.Pageable;
 import ru.practicum.dto.comment.CommentDto;
 import ru.practicum.dto.comment.NewCommentDto;
 import ru.practicum.dto.comment.UpdateCommentDto;
@@ -21,7 +22,7 @@ public interface CommentService {
 
     CommentDto getComment(Long commentId);
 
-    List<CommentDto> searchComments(String text);
+    List<CommentDto> searchComments(String text, Pageable pageable);
 
     UserCommentAdminDto giveWarning(Long commentId);
 

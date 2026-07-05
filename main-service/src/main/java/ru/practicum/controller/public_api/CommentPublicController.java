@@ -2,8 +2,11 @@ package ru.practicum.controller.public_api;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.comment.CommentDto;
@@ -30,7 +33,11 @@ public class CommentPublicController {
     }
 
     @GetMapping("/search")
-    public List<CommentDto> searchComments(@RequestParam @NotBlank @Size(min = 2, max = 250) String text) {
-        return commentService.searchComments(text);
+    public List<CommentDto> searchComments(@RequestParam @NotBlank @Size(min = 2, max = 250) String text,
+                                           @RequestParam(defaultValue = "0") @PositiveOrZero int from,
+                                           @RequestParam(defaultValue = "10") @Positive int size) {
+        Pageable pageable = PageRequest.of(from / size, size);
+
+        return commentService.searchComments(text, pageable);
     }
 }

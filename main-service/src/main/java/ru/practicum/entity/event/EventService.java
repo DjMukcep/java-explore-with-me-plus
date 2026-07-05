@@ -40,4 +40,6 @@ public interface EventService {
     Map<Long, Long> getViewsMap(List<Event> events);
 
     Event findEventByIdAndState(Long id, EventState state);
+
+    boolean isEventExists(Long eventId);
 }

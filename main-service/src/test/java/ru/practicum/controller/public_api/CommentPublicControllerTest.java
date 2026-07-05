@@ -3,9 +3,12 @@ package ru.practicum.controller.public_api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.dto.comment.CommentDto;
@@ -13,6 +16,7 @@ import ru.practicum.entity.comment.CommentService;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -96,7 +100,8 @@ class CommentPublicControllerTest {
     void searchComments_WhenValidText_ThenReturn200AndList() throws Exception {
         String searchText = "valid search";
         List<CommentDto> expectedList = List.of(sampleCommentDto);
-        when(commentService.searchComments(searchText)).thenReturn(expectedList);
+        Pageable pageable = PageRequest.of(0, 10);
+        when(commentService.searchComments(searchText,pageable)).thenReturn(expectedList);
 
         mockMvc.perform(get("/comments/search")
                         .param("text", searchText)
@@ -104,7 +109,7 @@ class CommentPublicControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].text").value(sampleCommentDto.getText()));
 
-        verify(commentService, times(1)).searchComments(searchText);
+        verify(commentService, times(1)).searchComments(searchText,pageable);
     }
 
     @Test
@@ -114,7 +119,7 @@ class CommentPublicControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
 
-        verify(commentService, never()).searchComments(anyString());
+        verify(commentService, never()).searchComments(anyString(),any(Pageable.class));
     }
 
     @Test
@@ -124,6 +129,27 @@ class CommentPublicControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
 
-        verify(commentService, never()).searchComments(anyString());
+        verify(commentService, never()).searchComments(anyString(),any(Pageable.class));
+    }
+
+    @Test
+    void searchComments_ShouldPassCorrectPageable() throws Exception {
+        when(commentService.searchComments(eq("test"), any(Pageable.class)))
+                .thenReturn(List.of(sampleCommentDto));
+
+        mockMvc.perform(get("/comments/search")
+                        .param("text", "test")
+                        .param("from", "20")
+                        .param("size", "10"))
+                .andExpect(status().isOk());
+
+        ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
+
+        verify(commentService).searchComments(eq("test"), captor.capture());
+
+        Pageable pageable = captor.getValue();
+
+        assertEquals(2, pageable.getPageNumber());
+        assertEquals(10, pageable.getPageSize());
     }
 }
