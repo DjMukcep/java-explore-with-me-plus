@@ -102,9 +102,15 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public void adminDelete(Long commentId) {
         Comment comment = getById(commentId);
+        User author = comment.getAuthor();
+
         CommentDto dto = CommentMapper.toCommentDto(comment);
-        log.info("Комментарий удален администратором: {}", CommentMapper.toLogComment(dto));
+        author.setCommentsCount(author.getCommentsCount() - 1);
+        setUserRank(author);
+
         commentRepository.delete(comment);
+
+        log.info("Комментарий удален администратором: {}", CommentMapper.toLogComment(dto));
     }
 
     @Override
