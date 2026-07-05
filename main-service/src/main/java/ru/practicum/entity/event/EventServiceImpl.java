@@ -324,8 +324,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventFullDto getPublishedEventById(Long id, HttpServletRequest request) {
-        Event event = eventRepository.findByIdAndState(id, EventState.PUBLISHED)
-                .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
+        Event event = findEventByIdAndState(id, EventState.PUBLISHED);
 
         sendHit(request);
 
@@ -370,6 +369,17 @@ public class EventServiceImpl implements EventService {
                 .collect(Collectors.toMap(
                         vs -> Long.parseLong(vs.getUri().substring("/events/".length())),
                         ViewStats::getHits));
+    }
+
+    @Override
+    public Event findEventByIdAndState(Long id, EventState state) {
+        return  eventRepository.findByIdAndState(id, state)
+                .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
+    }
+
+    @Override
+    public boolean isEventExists(Long eventId) {
+        return eventRepository.existsById(eventId);
     }
 
     // ---------- QueryDSL predicates ----------

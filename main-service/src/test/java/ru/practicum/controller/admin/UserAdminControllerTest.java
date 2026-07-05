@@ -2,16 +2,19 @@ package ru.practicum.controller.admin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.practicum.dto.comment.UserCommentAdminDto;
 import ru.practicum.dto.user.NewUserRequest;
 import ru.practicum.dto.user.UserDto;
 import ru.practicum.dto.user.UserParamDto;
 import ru.practicum.entity.user.UserService;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -32,6 +35,8 @@ class UserAdminControllerTest {
 
     @MockBean
     private UserService userService;
+
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Test
     void saveUser_shouldReturnCreatedUser() throws Exception {
@@ -123,6 +128,41 @@ class UserAdminControllerTest {
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(userService);
+    }
+
+    @Test
+    void updateUserBan_withBanDate_returnsOk() throws Exception {
+        var banDate = java.time.LocalDateTime.now().plusDays(1);
+        UserCommentAdminDto userCommentAdminDto = UserCommentAdminDto.builder()
+                .authorName("Test Name")
+                .authorId(1L)
+                .adminWarnCount(0)
+                .bannedUntil(banDate.format(FORMATTER))
+                .build();
+
+        when(userService.updateUserBan(eq(1L), eq(banDate))).thenReturn(userCommentAdminDto);
+
+        mockMvc.perform(patch("/admin/users/{userId}", 1L)
+                        .param("banDate", banDate.format(FORMATTER))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void updateUserBan_withoutBanDate_returnsOk() throws Exception {
+        var banDate = java.time.LocalDateTime.now().plusDays(1);
+        UserCommentAdminDto userCommentAdminDto = UserCommentAdminDto.builder()
+                .authorName("Test Name")
+                .authorId(1L)
+                .adminWarnCount(0)
+                .bannedUntil(banDate.format(FORMATTER))
+                .build();
+
+        when(userService.updateUserBan(eq(1L), ArgumentMatchers.isNull())).thenReturn(userCommentAdminDto);
+
+        mockMvc.perform(patch("/admin/users/{userId}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 
 }

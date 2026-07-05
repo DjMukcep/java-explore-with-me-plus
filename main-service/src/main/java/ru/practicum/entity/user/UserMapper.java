@@ -15,6 +15,7 @@ public class UserMapper {
         return User.builder()
                 .mail(newUserRequest.getEmail())
                 .name(newUserRequest.getName())
+                .rank(CommentsRank.NOVICE)
                 .build();
     }
 
